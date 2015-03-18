@@ -214,10 +214,10 @@ static void TIM1_Config(void){
 	
 	TIM_ARRPreloadConfig(TIM1, ENABLE);
 	
-	TIM_OCInitStruct.TIM_OCMode = TIM_OCMode_PWM2; 
+	TIM_OCInitStruct.TIM_OCMode = TIM_OCMode_PWM1; 
 	TIM_OCInitStruct.TIM_OutputState = TIM_OutputState_Enable; 
 	TIM_OCInitStruct.TIM_OutputNState = TIM_OutputNState_Enable; 
-	TIM_OCInitStruct.TIM_Pulse = 50; //use index value that increases during each interrupt tick to change duty cycle varied based on sinewave.
+	TIM_OCInitStruct.TIM_Pulse = 50; //pulse is the CCR register in OC mode
 	TIM_OCInitStruct.TIM_OCPolarity = TIM_OCPolarity_High; 
 	TIM_OCInitStruct.TIM_OCNPolarity = TIM_OCNPolarity_High; //OCN is the output of the output compare register, by setting OCN polarity to high we allow the output to follow the OC when it is high.
 	TIM_OCInitStruct.TIM_OCIdleState = TIM_OCIdleState_Set; 
@@ -370,6 +370,7 @@ static void Encoder_Config(void){
 
 
 //Process data is called by TIM7 IRQ.
+TODO: reduce number of axis being processed, we only need one axis of the gyro, reduce number of axis being read as well.
 void Process_Data(void){
 	float temp;
 	uint8_t n;

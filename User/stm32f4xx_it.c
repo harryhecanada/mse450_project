@@ -206,7 +206,9 @@ void SysTick_Handler(void)
 //IRQ handler for each PWM pulse
 void TIM1_CC_IRQHandler(void){
 	if (TIM_GetITStatus(TIM1, TIM_IT_CC1) != RESET){
-		
+		TODO: vary each phase's CCR register based on the encoder reading, and also shift each phase by "120" degrees (2000/120 ticks), 
+		to change velocity we need a variable that defines velocity to be the multiplier to the pointer that is reading the sinewave data from the array above.
+		when a phase has gone through the 1000 data points of pwmdata its value should be 0, as defined by the 3 phase motor control scheme.
 		TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
 	}
 	else{
@@ -229,6 +231,10 @@ void TIM2_CC_IRQHandler(void){
 		if(temp>9)
 		{
 			temp=0;
+		}
+		if(temp==6)
+		{
+			TODO:RESET ENCODER COUNT
 		}
 		
 		if(Hall2En[temp][0])
