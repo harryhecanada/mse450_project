@@ -178,7 +178,8 @@ static void MPU6050_Config(MPU6050_Addr Device_ID){
 }
 
 
-//Configures the TIM1 Peripheral, this is used for PWM to the H bridges, uses E9 E11 E13
+//Configures the TIM1 Peripheral, this is used for PWM to the H bridges, uses E9 E11 E13, 
+//the interrupt on TIM1 also dictates the sampling frequency of the encoder and the overall system
 static void TIM1_Config(void){
 	GPIO_InitTypeDef GPIO_InitStruct;
 	TIM_OCInitTypeDef TIM_OCInitStruct;
@@ -324,13 +325,12 @@ static void TIM7_Config(void){
   TIM_ITConfig(TIM7, TIM_IT_Update, ENABLE);
 	EnableTimerInterrupt(TIM7_IRQn, 0);
 }
-//configure the quadrature encoder reading uses B6 B7 A0 TIM4
+//configure the quadrature encoder reading uses B6 B7 TIM4
 static void Encoder_Config(void){
 	GPIO_InitTypeDef GPIO_InitStruct;
 	EXTI_InitTypeDef EXTI_InitStruct;
   NVIC_InitTypeDef NVIC_InitStruct;
 	
-	RCC_AHB1PeriphClockCmd (RCC_AHB1Periph_GPIOA, ENABLE);
 	RCC_AHB1PeriphClockCmd (RCC_AHB1Periph_GPIOB, ENABLE);
 	RCC_APB1PeriphClockCmd (RCC_APB1Periph_TIM4, ENABLE);
 	RCC_APB2PeriphClockCmd (RCC_APB2Periph_SYSCFG, ENABLE);
@@ -346,25 +346,6 @@ static void Encoder_Config(void){
 	TIM_EncoderInterfaceConfig (TIM4, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
 	TIM_SetAutoreload (TIM4, 2000);//number of encoder signals in one rotation of motor = 4*500 = 2000;
 	TIM_Cmd(TIM4,ENABLE);
-	
-	//Reset signal for the encoder is on the same line as the blue button
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
-  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
-  GPIO_Init(GPIOA, &GPIO_InitStruct);
-	
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource0);
-  EXTI_InitStruct.EXTI_Line = EXTI_Line0;
-  EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
-  EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Falling;  //use falling edge since port is pulled up.
-  EXTI_InitStruct.EXTI_LineCmd = ENABLE;
-  EXTI_Init(&EXTI_InitStruct);
-
-  NVIC_InitStruct.NVIC_IRQChannel = EXTI0_IRQn ;
-  NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0x05;
-  NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0x05;
-  NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStruct); 
 }
 
 
