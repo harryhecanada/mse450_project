@@ -36,6 +36,9 @@
 #define SIGNED_INT_MAX 32767
 #define PHASE_OFFSET_120 667
 #define PHASE_OFFSET_240 1333
+//MAIN_CLOCK_PERIOD_COUNT/100
+#define MAIN_CLOCK_PERIOD_MULT 21
+
 
 const unsigned short int Hall2En[8][3]={{0,0,0},{0,1,1},{1,1,0},{1,0,1},{1,0,1},{1,1,0},{0,1,1},{0,0,0}};
 	
@@ -206,9 +209,51 @@ void SysTick_Handler(void)
 //IRQ handler for each PWM pulse
 void TIM1_CC_IRQHandler(void){
 	if (TIM_GetITStatus(TIM1, TIM_IT_CC1) != RESET){
-		TODO: vary each phase's CCR register based on the encoder reading, and also shift each phase by "120" degrees (2000/120 ticks), 
-		to change velocity we need a variable that defines velocity to be the multiplier to the pointer that is reading the sinewave data from the array above.
-		when a phase has gone through the 1000 data points of pwmdata its value should be 0, as defined by the 3 phase motor control scheme.
+		//TODO:Figure out what should actually be the change in index value to get the correct velocity from motor...
+		P1Index+=MAIN_CLOCK_PERIOD_MULT*Velocity_Data_FIFO[2][2];
+		P2Index+=MAIN_CLOCK_PERIOD_MULT*Velocity_Data_FIFO[2][2];
+		P3Index+=MAIN_CLOCK_PERIOD_MULT*Velocity_Data_FIFO[2][2];
+		if(P1Index>2000)
+		{
+			P1Index-=2000;
+		}
+		else if(P1Index>1000)
+		{
+			TIM_SetCompare1(TIM1,0);
+		}
+		else
+		{
+			TIM_SetCompare1(TIM1,PWMdata[P1Index]);
+		}
+		if(P2Index>2000)
+		{
+			P2Index-=2000;
+		}
+		else if(P2Index>1000)
+		{
+			TIM_SetCompare1(TIM1,0);
+		}
+		else
+		{
+			TIM_SetCompare1(TIM1,PWMdata[P1Index]);
+		}
+		if(P3Index>2000)
+		{
+			P3Index-=2000;
+		}
+		else if(P3Index>1000)
+		{
+			TIM_SetCompare1(TIM1,0);
+		}
+		else
+		{
+			TIM_SetCompare1(TIM1,PWMdata[P1Index]);
+		}
+		
+		//TODO: vary each phase's CCR register based on the encoder reading, and also shift each phase by "120" degrees (2000/120 ticks), 
+		//to change velocity we need a variable that defines velocity to be the multiplier to the pointer that is reading the sinewave data from the array above.
+		//when a phase has gone through the 1000 data points of pwmdata its value should be 0, as defined by the 3 phase motor control scheme.
+		
 		TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
 	}
 	else{

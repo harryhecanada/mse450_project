@@ -15,6 +15,9 @@ int16_t MPU6050_Offset[6];
 MPU6050_Data MPU6050_Device_0_Data;
 MPU6050_Data MPU6050_Device_1_Data;
 
+//defines the number of counts in one clock period, one clock period being 42MHz/MAIN_CLOCK_PERIOD_COUNT = 2KHz
+#define MAIN_CLOCK_PERIOD_COUNT 21000-1
+
 // Private Functions
 static uint32_t Demo_USBConfig(void);
 static void TIM1_Config(void);
@@ -206,9 +209,8 @@ static void TIM1_Config(void){
 	
 	//Period max value is 0xFFFF/65535, NOTE VALUE ONLY MATTERS FOR PWM MODE, IN TOGGLE OR OC MODE SET IT TO 0!
 	
-	TIM_TimeBaseStruct.TIM_Prescaler = 2-1;
-  TIM_TimeBaseStruct.TIM_Period = 13125-1; //6.4KHz clock
-  
+	TIM_TimeBaseStruct.TIM_Prescaler = 4-1;//168MHz/4=42MHz
+  TIM_TimeBaseStruct.TIM_Period = MAIN_CLOCK_PERIOD_COUNT;
   TIM_TimeBaseStruct.TIM_ClockDivision = TIM_CKD_DIV1;
   TIM_TimeBaseStruct.TIM_CounterMode = TIM_CounterMode_Up;
   TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStruct);
@@ -328,8 +330,6 @@ static void TIM7_Config(void){
 //configure the quadrature encoder reading uses B6 B7 TIM4
 static void Encoder_Config(void){
 	GPIO_InitTypeDef GPIO_InitStruct;
-	EXTI_InitTypeDef EXTI_InitStruct;
-  NVIC_InitTypeDef NVIC_InitStruct;
 	
 	RCC_AHB1PeriphClockCmd (RCC_AHB1Periph_GPIOB, ENABLE);
 	RCC_APB1PeriphClockCmd (RCC_APB1Periph_TIM4, ENABLE);
@@ -351,7 +351,7 @@ static void Encoder_Config(void){
 
 
 //Process data is called by TIM7 IRQ.
-TODO: reduce number of axis being processed, we only need one axis of the gyro, reduce number of axis being read as well.
+//TODO: reduce number of axis being processed, we only need one axis of the gyro, reduce number of axis being read as well.
 void Process_Data(void){
 	float temp;
 	uint8_t n;
