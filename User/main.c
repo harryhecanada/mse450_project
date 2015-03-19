@@ -352,6 +352,7 @@ static void Encoder_Config(void){
 	TIM_EncoderInterfaceConfig (TIM4, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
 	TIM_SetAutoreload (TIM4, 2000);//number of encoder signals in one rotation of motor = 4*500 = 2000;
 	TIM_Cmd(TIM4,ENABLE);
+	//to read counter use: int reading=TIM_GetCounter(TIM4);
 }
 //Process data is called by TIM7 IRQ.
 //TODO: reduce number of axis being processed, we only need one axis of the gyro, reduce number of axis being read as well.

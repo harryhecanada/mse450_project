@@ -212,6 +212,9 @@ void SysTick_Handler(void)
 void TIM1_CC_IRQHandler(void){
 	if (TIM_GetITStatus(TIM1, TIM_IT_CC1) != RESET){
 		//TODO:Figure out what should actually be the change in index value to get the correct velocity from motor...
+		//PID update function here!!!
+		//set value output to be int velocity
+		//multiply velocity into below...
 		
 		P1Index+=MAIN_CLOCK_PERIOD_MULT*MPU6050_Data_FIFO[3][2];
 		P2Index+=MAIN_CLOCK_PERIOD_MULT*MPU6050_Data_FIFO[3][2];
