@@ -75,7 +75,9 @@ unsigned short int P1Index=0,P2Index=667,P3Index=1333;
 
 extern uint8_t BeginFlag;
 extern uint8_t UserButtonPressed;
+extern float MPU6050_Data_FIFO[6][3];
 extern float Velocity_Data_FIFO [3][3];
+extern float Rotation_Data[3];
 
 /* Private function prototypes -----------------------------------------------*/
 extern USB_OTG_CORE_HANDLE           USB_OTG_dev;
@@ -210,9 +212,10 @@ void SysTick_Handler(void)
 void TIM1_CC_IRQHandler(void){
 	if (TIM_GetITStatus(TIM1, TIM_IT_CC1) != RESET){
 		//TODO:Figure out what should actually be the change in index value to get the correct velocity from motor...
-		P1Index+=MAIN_CLOCK_PERIOD_MULT*Velocity_Data_FIFO[2][2];
-		P2Index+=MAIN_CLOCK_PERIOD_MULT*Velocity_Data_FIFO[2][2];
-		P3Index+=MAIN_CLOCK_PERIOD_MULT*Velocity_Data_FIFO[2][2];
+		
+		P1Index+=MAIN_CLOCK_PERIOD_MULT*MPU6050_Data_FIFO[3][2];
+		P2Index+=MAIN_CLOCK_PERIOD_MULT*MPU6050_Data_FIFO[3][2];
+		P3Index+=MAIN_CLOCK_PERIOD_MULT*MPU6050_Data_FIFO[3][2];
 		if(P1Index>2000)
 		{
 			P1Index-=2000;
@@ -250,9 +253,6 @@ void TIM1_CC_IRQHandler(void){
 			TIM_SetCompare1(TIM1,PWMdata[P1Index]);
 		}
 		
-		//TODO: vary each phase's CCR register based on the encoder reading, and also shift each phase by "120" degrees (2000/120 ticks), 
-		//to change velocity we need a variable that defines velocity to be the multiplier to the pointer that is reading the sinewave data from the array above.
-		//when a phase has gone through the 1000 data points of pwmdata its value should be 0, as defined by the 3 phase motor control scheme.
 		
 		TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
 	}
@@ -279,7 +279,7 @@ void TIM2_CC_IRQHandler(void){
 		}
 		if(temp==6)
 		{
-			TODO:RESET ENCODER COUNT
+			TIM_SetCounter(TIM4,0);
 		}
 		
 		if(Hall2En[temp][0])
@@ -322,17 +322,6 @@ void TIM2_CC_IRQHandler(void){
 void TIM7_IRQHandler(void){
 	if (TIM_GetITStatus(TIM7, TIM_IT_Update) != RESET){
 	  if (MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_INT_STATUS,0)){
-				
-				//TODO: using found direction set the duty cycle accordingly
-				/*if(dir)
-				{
-					setDuty(approxsin());
-				}
-				else
-				{
-					setDuty(approxsin());
-				}*/
-			
 				Process_Data();//Note IT pending bit will be cleared AFTER processing is complete.
 			}
     }

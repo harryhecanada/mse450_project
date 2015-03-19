@@ -126,13 +126,19 @@ static void Demo_Exec(void){
     UserButtonPressed = 0x00;
     
 		/* Initialize MPU-6050 */
-		MPU6050_Config(MPU6050_Device_0);
+		//MPU6050_Config(MPU6050_Device_0);
 		
 		printf("MPU6050 Initialization Complete, Offsets Acquired. Beginning Interrupt Config... \n");
     /* TIM channels configuration IRQ is disabled while configuration is in progress.*/
 		__disable_irq();
-    TIM7_Config();
-
+    //TIM7_Config();
+			
+		//Main Sampling Clock & PWM Output
+		TIM1_Config();
+		//Hall Interface
+		TIM2_Config();
+		//Encoder Configuration
+		Encoder_Config();
     
     Demo_USBConfig();
     __enable_irq();
@@ -347,9 +353,6 @@ static void Encoder_Config(void){
 	TIM_SetAutoreload (TIM4, 2000);//number of encoder signals in one rotation of motor = 4*500 = 2000;
 	TIM_Cmd(TIM4,ENABLE);
 }
-
-
-
 //Process data is called by TIM7 IRQ.
 //TODO: reduce number of axis being processed, we only need one axis of the gyro, reduce number of axis being read as well.
 void Process_Data(void){
@@ -382,7 +385,7 @@ void Process_Data(void){
 		MPU6050_Data_FIFO[4][2]=(float)MPU6050_Device_0_Data.Gyro_Y/MPU6050_GYRO_SENS_250;
 		MPU6050_Data_FIFO[5][2]=(float)MPU6050_Device_0_Data.Gyro_Z/MPU6050_GYRO_SENS_250;
 		
-		//Velocity Data - 20 Cycles each?
+		/*Velocity Data - 20 Cycles each?
 		temp=(MPU6050_Data_FIFO[0][0]+4*MPU6050_Data_FIFO[0][1]+MPU6050_Data_FIFO[0][2]);
 		Velocity_Data_FIFO[0][2]=Velocity_Data_FIFO[0][2]+0.0005f*temp;
 		
@@ -391,18 +394,19 @@ void Process_Data(void){
 		
 		temp=(MPU6050_Data_FIFO[2][0]+4*MPU6050_Data_FIFO[2][1]+MPU6050_Data_FIFO[2][2]);
 		Velocity_Data_FIFO[2][2]=Velocity_Data_FIFO[2][2]+0.0005f*temp;
+		*/
 		
 		//Rotation Data
 		temp=(MPU6050_Data_FIFO[3][0]+4*MPU6050_Data_FIFO[3][1]+MPU6050_Data_FIFO[0][2]);
 		Rotation_Data[0]=Rotation_Data[0]+0.0005f*temp;
 		
 		temp=(MPU6050_Data_FIFO[4][0]+4*MPU6050_Data_FIFO[4][1]+MPU6050_Data_FIFO[0][2]);
-		Rotation_Data[0]=Rotation_Data[0]+0.0005f*temp;
+		Rotation_Data[1]=Rotation_Data[1]+0.0005f*temp;
 		
 		temp=(MPU6050_Data_FIFO[5][0]+4*MPU6050_Data_FIFO[5][1]+MPU6050_Data_FIFO[2][2]);
-		Rotation_Data[0]=Rotation_Data[0]+0.0005f*temp;
+		Rotation_Data[2]=Rotation_Data[2]+0.0005f*temp;
 		
-		//Displacement Data
+		/*Displacement Data
 		temp=(Velocity_Data_FIFO[0][0]+4*Velocity_Data_FIFO[0][1]+Velocity_Data_FIFO[0][2]);
 		Displacement_Data[0]=Displacement_Data[0]+0.0005f*temp;
 		
@@ -411,6 +415,7 @@ void Process_Data(void){
 		
 		temp=(Velocity_Data_FIFO[2][0]+4*Velocity_Data_FIFO[2][1]+Velocity_Data_FIFO[2][2]);
 		Displacement_Data[2]=Displacement_Data[2]+0.0005f*temp;
+		*/
 	}
 	__enable_irq();
 	TIM_ClearITPendingBit(TIM4, TIM_IT_Update);

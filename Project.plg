@@ -7,106 +7,23 @@ E:\mse450_project\Project.uvproj
 Project File Date:  03/12/2015
 
 <h2>Output:</h2>
-compiling main.c...
-User\main.c(210): error:  #20: identifier "MAIN_CLOCK_PERIOD_COUNT" is undefined
-User\main.c(331): warning:  #177-D: variable "EXTI_InitStruct" was declared but never referenced
-User\main.c(332): warning:  #177-D: variable "NVIC_InitStruct" was declared but never referenced
-User\main.c(354): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(354): error:  #65: expected a ";"
-User\main.c(377): warning:  #12-D: parsing restarts here after previous syntax error
-User\main.c(378): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(378): error:  #147: declaration is incompatible with "float MPU6050_Data_FIFO[6][3]" (declared at line 37)
-User\main.c(378): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(378): error:  #28: expression must have a constant value
-User\main.c(379): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(379): error:  #147: declaration is incompatible with "int MPU6050_Data_FIFO[1][2]" (declared at line 378)
-User\main.c(379): error:  #148: variable "MPU6050_Data_FIFO" has already been initialized
-User\main.c(379): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(379): error:  #28: expression must have a constant value
-User\main.c(381): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(381): error:  #147: declaration is incompatible with "int MPU6050_Data_FIFO[2][2]" (declared at line 379)
-User\main.c(381): error:  #148: variable "MPU6050_Data_FIFO" has already been initialized
-User\main.c(381): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(381): error:  #28: expression must have a constant value
-User\main.c(382): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(382): error:  #147: declaration is incompatible with "int MPU6050_Data_FIFO[3][2]" (declared at line 381)
-User\main.c(382): error:  #148: variable "MPU6050_Data_FIFO" has already been initialized
-User\main.c(382): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(382): error:  #28: expression must have a constant value
-User\main.c(383): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(383): error:  #147: declaration is incompatible with "int MPU6050_Data_FIFO[4][2]" (declared at line 382)
-User\main.c(383): error:  #148: variable "MPU6050_Data_FIFO" has already been initialized
-User\main.c(383): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(383): error:  #28: expression must have a constant value
-User\main.c(386): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(386): error:  #28: expression must have a constant value
-User\main.c(386): error:  #28: expression must have a constant value
-User\main.c(386): warning:  #175-D: subscript out of range
-User\main.c(386): error:  #28: expression must have a constant value
-User\main.c(387): error:  #94-D: the size of an array must be greater than zero
-User\main.c(387): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(387): error:  #147: declaration is incompatible with "float Velocity_Data_FIFO[3][3]" (declared at line 45)
-User\main.c(387): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(387): error:  #146: too many initializer values
-"User\main.c" - 30 Errors, 10 Warning(s).
 Build target 'Target 1'
+compiling main.c...
+User\main.c(320): warning:  #177-D: function "TIM7_Config" was declared but never referenced
+User\main.c(173): warning:  #177-D: function "MPU6050_Config" was declared but never referenced
+compiling stm32f4xx_it.c...
+linking...
+Program Size: Code=12068 RO-data=1592 RW-data=388 ZI-data=2740  
+FromELF: creating hex file...
+".\Project.axf" - 0 Errors, 2 Warning(s).
+Rebuild target 'Target 1'
 assembling startup_stm32f4xx.s...
 compiling stm32f4_discovery.c...
 compiling main.c...
-User\main.c(334): warning:  #177-D: variable "EXTI_InitStruct" was declared but never referenced
-User\main.c(335): warning:  #177-D: variable "NVIC_InitStruct" was declared but never referenced
-User\main.c(357): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(357): error:  #65: expected a ";"
-User\main.c(380): warning:  #12-D: parsing restarts here after previous syntax error
-User\main.c(381): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(381): error:  #147: declaration is incompatible with "float MPU6050_Data_FIFO[6][3]" (declared at line 40)
-User\main.c(381): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(381): error:  #28: expression must have a constant value
-User\main.c(382): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(382): error:  #147: declaration is incompatible with "int MPU6050_Data_FIFO[1][2]" (declared at line 381)
-User\main.c(382): error:  #148: variable "MPU6050_Data_FIFO" has already been initialized
-User\main.c(382): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(382): error:  #28: expression must have a constant value
-User\main.c(384): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(384): error:  #147: declaration is incompatible with "int MPU6050_Data_FIFO[2][2]" (declared at line 382)
-User\main.c(384): error:  #148: variable "MPU6050_Data_FIFO" has already been initialized
-User\main.c(384): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(384): error:  #28: expression must have a constant value
-User\main.c(385): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(385): error:  #147: declaration is incompatible with "int MPU6050_Data_FIFO[3][2]" (declared at line 384)
-User\main.c(385): error:  #148: variable "MPU6050_Data_FIFO" has already been initialized
-User\main.c(385): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(385): error:  #28: expression must have a constant value
-User\main.c(386): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(386): error:  #147: declaration is incompatible with "int MPU6050_Data_FIFO[4][2]" (declared at line 385)
-User\main.c(386): error:  #148: variable "MPU6050_Data_FIFO" has already been initialized
-User\main.c(386): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(386): error:  #28: expression must have a constant value
-User\main.c(389): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(389): error:  #28: expression must have a constant value
-User\main.c(389): error:  #28: expression must have a constant value
-User\main.c(389): warning:  #175-D: subscript out of range
-User\main.c(389): error:  #28: expression must have a constant value
-User\main.c(390): error:  #94-D: the size of an array must be greater than zero
-User\main.c(390): error:  #77-D: this declaration has no storage class or type specifier
-User\main.c(390): error:  #147: declaration is incompatible with "float Velocity_Data_FIFO[3][3]" (declared at line 48)
-User\main.c(390): warning:  #520-D: initialization with "{...}" expected for aggregate object
-User\main.c(390): error:  #146: too many initializer values
-User\main.c(390): error:  #28: expression must have a constant value
+User\main.c(320): warning:  #177-D: function "TIM7_Config" was declared but never referenced
+User\main.c(173): warning:  #177-D: function "MPU6050_Config" was declared but never referenced
 compiling printf.c...
 compiling stm32f4xx_it.c...
-User\stm32f4xx_it.c(209): error:  #1182: a declaration cannot have a label
-User\stm32f4xx_it.c(209): error:  #20: identifier "Figure" is undefined
-User\stm32f4xx_it.c(209): error:  #65: expected a ";"
-User\stm32f4xx_it.c(217): error:  #127: expected a statement
-User\stm32f4xx_it.c(235): error:  #8: missing closing quote
-User\stm32f4xx_it.c(244): warning:  #12-D: parsing restarts here after previous syntax error
-User\stm32f4xx_it.c(246): error:  #268: declaration may not appear after executable statement in block
-User\stm32f4xx_it.c(246): error:  #65: expected a ";"
-User\stm32f4xx_it.c(294): warning:  #12-D: parsing restarts here after previous syntax error
-User\stm32f4xx_it.c(304): error:  #268: declaration may not appear after executable statement in block
-User\stm32f4xx_it.c(209): warning:  #177-D: label "TODO" was declared but never referenced
-User\stm32f4xx_it.c(304): error:  #67: expected a "}"
 compiling system_stm32f4xx.c...
 compiling usb_bsp.c...
 compiling usbd_desc.c...
@@ -150,21 +67,7 @@ compiling usb_core.c...
 compiling usb_dcd.c...
 compiling usb_dcd_int.c...
 compiling stm32f4_MPU6050.c...
-".\Project.axf" - 39 Errors, 13 Warning(s).
-Target not created
-compiling main.c...
-User\main.c(334): warning:  #177-D: variable "EXTI_InitStruct" was declared but never referenced
-User\main.c(335): warning:  #177-D: variable "NVIC_InitStruct" was declared but never referenced
-User\main.c(186): warning:  #177-D: function "TIM1_Config" was declared but never referenced
-User\main.c(250): warning:  #177-D: function "TIM2_Config" was declared but never referenced
-User\main.c(332): warning:  #177-D: function "Encoder_Config" was declared but never referenced
-"User\main.c" - 0 Errors, 5 Warning(s).
-compiling stm32f4xx_it.c...
-User\stm32f4xx_it.c(220): error:  #127: expected a statement
-User\stm32f4xx_it.c(247): warning:  #12-D: parsing restarts here after previous syntax error
-User\stm32f4xx_it.c(249): error:  #268: declaration may not appear after executable statement in block
-User\stm32f4xx_it.c(249): error:  #65: expected a ";"
-User\stm32f4xx_it.c(297): warning:  #12-D: parsing restarts here after previous syntax error
-User\stm32f4xx_it.c(307): error:  #268: declaration may not appear after executable statement in block
-User\stm32f4xx_it.c(307): error:  #67: expected a "}"
-"User\stm32f4xx_it.c" - 5 Errors, 2 Warning(s).
+linking...
+Program Size: Code=12068 RO-data=1592 RW-data=388 ZI-data=2740  
+FromELF: creating hex file...
+".\Project.axf" - 0 Errors, 2 Warning(s).
