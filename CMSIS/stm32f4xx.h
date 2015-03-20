@@ -135,7 +135,9 @@
 #if !defined  (__FPU_PRESENT) 
   #define __FPU_PRESENT             1       /*!< FPU present                                   */
 #endif /* __FPU_PRESENT */
-
+#if !defined  (__FPU_USED) 
+  #define __FPU_USED             1       /*!< FPU present                                   */
+#endif /* __FPU_USED */
  
  
 /**

@@ -55,11 +55,11 @@ float Displacement_Data[3]={0};
 Main Function
 */
 int main(void){
-  printf("Hello World\n");
+  //printf("Hello World\n");
 	
   //initalize user button
-  STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI); 
-  
+	SystemInit();
+  //STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI); 
 	Demo_Exec();
 }
 
@@ -75,84 +75,86 @@ static void EnableTimerInterrupt(uint8_t TIMx_IRQn, uint8_t Priority){
 
 //Execute the demo application, code from STM32F4 demo package using it for a base.
 static void Demo_Exec(void){
-  RCC_ClocksTypeDef RCC_Clocks;
-  uint8_t togglecounter = 0x00;
-	
-  /* SysTick end of count event each 1ms */
-  RCC_GetClocksFreq(&RCC_Clocks);
-  SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);  
+  
+	//RCC_ClocksTypeDef RCC_Clocks;
+//  uint8_t togglecounter = 0x00;
+//	
+//  /* SysTick end of count event each 1ms */
+  //RCC_GetClocksFreq(&RCC_Clocks);
+  //SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);  
   while(1)
   {
-    BeginFlag = 0x00;
-    
-    /* Reset UserButton_Pressed variable, when the EXTI0_IRQHandler is called by pushing the push button UserButtonPressed is set to 0x01 */
-    UserButtonPressed = 0x00;
-    
-    /* Initialize LEDs to be managed by GPIO */
-    STM_EVAL_LEDInit(LED3);
-    STM_EVAL_LEDInit(LED4);
-    STM_EVAL_LEDInit(LED5);
-    STM_EVAL_LEDInit(LED6);
+//    BeginFlag = 0x00;
+//    
+//    /* Reset UserButton_Pressed variable, when the EXTI0_IRQHandler is called by pushing the push button UserButtonPressed is set to 0x01 */
+//    UserButtonPressed = 0x00;
+//    
+//    /* Initialize LEDs to be managed by GPIO */
+//    STM_EVAL_LEDInit(LED3);
+//    STM_EVAL_LEDInit(LED4);
+//    STM_EVAL_LEDInit(LED5);
+//    STM_EVAL_LEDInit(LED6);
 
-    /* Turn OFF all LEDs */
-    STM_EVAL_LEDOff(LED3);
-    STM_EVAL_LEDOff(LED4);
-    STM_EVAL_LEDOff(LED5);
-    STM_EVAL_LEDOff(LED6);
-    
-    /* Waiting while user button is not pressed */
-    while (UserButtonPressed == 0x00)
-    {
-      togglecounter ++;
-      if (togglecounter == 0x10)
-      {
-        togglecounter = 0x00;
-        while (togglecounter < 0x10)
-        {
-          STM_EVAL_LEDToggle(LED4);
-          STM_EVAL_LEDToggle(LED3);
-          STM_EVAL_LEDToggle(LED5);
-          STM_EVAL_LEDToggle(LED6);
-          DelayMs(500);
-          togglecounter ++;
-        }
-       togglecounter = 0x00;
-      }
-    }
-    
-    /* Waiting until user button is released to clear the user button pressed variable*/
-    while (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
-    {}
-    UserButtonPressed = 0x00;
-    
+//    /* Turn OFF all LEDs */
+//    STM_EVAL_LEDOff(LED3);
+//    STM_EVAL_LEDOff(LED4);
+//    STM_EVAL_LEDOff(LED5);
+//    STM_EVAL_LEDOff(LED6);
+//    
+//    /* Waiting while user button is not pressed */
+//    while (UserButtonPressed == 0x00)
+//    {
+//      togglecounter ++;
+//      if (togglecounter == 0x10)
+//      {
+//        togglecounter = 0x00;
+//        while (togglecounter < 0x10)
+//        {
+//          STM_EVAL_LEDToggle(LED4);
+//          STM_EVAL_LEDToggle(LED3);
+//          STM_EVAL_LEDToggle(LED5);
+//          STM_EVAL_LEDToggle(LED6);
+//          DelayMs(500);
+//          togglecounter ++;
+//        }
+//       togglecounter = 0x00;
+//      }
+//    }
+//    
+//    /* Waiting until user button is released to clear the user button pressed variable*/
+//    while (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
+//    {}
+//    UserButtonPressed = 0x00;
 		/* Initialize MPU-6050 */
 		//MPU6050_Config(MPU6050_Device_0);
-		
-		printf("MPU6050 Initialization Complete, Offsets Acquired. Beginning Interrupt Config... \n");
+		//printf("MPU6050 Initialization Complete, Offsets Acquired. Beginning Interrupt Config... \n");
     /* TIM channels configuration IRQ is disabled while configuration is in progress.*/
-		__disable_irq();
+		//__disable_irq();
     //TIM7_Config();
 			
 		//Main Sampling Clock & PWM Output
 		TIM1_Config();
+		while(1)
+		{
+		}
 		//Hall Interface
-		TIM2_Config();
+		//TIM2_Config();
 		//Encoder Configuration
-		Encoder_Config();
+		//Encoder_Config();
     
-    Demo_USBConfig();
-    __enable_irq();
+    //Demo_USBConfig();
+    //__enable_irq();
     /* Waiting User Button is pressed */
-    while (UserButtonPressed == 0x00)
-    {}
-    
-    /* Waiting User Button is Released */
-    while (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
-    {}
-			
-    /* Disconnect the USB device */
-    DCD_DevDisconnect(&USB_OTG_dev);
-    USB_OTG_StopDevice(&USB_OTG_dev);
+//    while (UserButtonPressed == 0x00)
+//    {}
+//    
+//    /* Waiting User Button is Released */
+//    while (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
+//    {}
+//			
+//    /* Disconnect the USB device */
+//    DCD_DevDisconnect(&USB_OTG_dev);
+//    USB_OTG_StopDevice(&USB_OTG_dev);
   }
 }
 
@@ -195,14 +197,14 @@ static void TIM1_Config(void){
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStruct;
 	
 	//Turn on the HCLK for TIM1 and GPIO A
-	RCC_APB1PeriphClockCmd(RCC_APB2Periph_TIM1,ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1,ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
 	
 	//Using PD10 and PD11 for PWM to HBridges
 	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_11 | GPIO_Pin_13;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;//GPIO_PuPd_NOPULL
   GPIO_InitStruct.GPIO_Speed = GPIO_Speed_100MHz;
   GPIO_Init(GPIOE, &GPIO_InitStruct);
 	
@@ -212,25 +214,21 @@ static void TIM1_Config(void){
 	GPIO_PinAFConfig(GPIOE, GPIO_PinSource13, GPIO_AF_TIM1); 
 	
 	/* Time base configuration */
-	
 	//Period max value is 0xFFFF/65535, NOTE VALUE ONLY MATTERS FOR PWM MODE, IN TOGGLE OR OC MODE SET IT TO 0!
 	
 	TIM_TimeBaseStruct.TIM_Prescaler = 4-1;//168MHz/4=42MHz
-  TIM_TimeBaseStruct.TIM_Period = MAIN_CLOCK_PERIOD_COUNT;
+  TIM_TimeBaseStruct.TIM_Period = 21000;
   TIM_TimeBaseStruct.TIM_ClockDivision = TIM_CKD_DIV1;
   TIM_TimeBaseStruct.TIM_CounterMode = TIM_CounterMode_Up;
   TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStruct);
+
 	
-	TIM_ARRPreloadConfig(TIM1, ENABLE);
-	
-	TIM_OCInitStruct.TIM_OCMode = TIM_OCMode_PWM1; 
-	TIM_OCInitStruct.TIM_OutputState = TIM_OutputState_Enable; 
-	TIM_OCInitStruct.TIM_OutputNState = TIM_OutputNState_Enable; 
-	TIM_OCInitStruct.TIM_Pulse = 50; //pulse is the CCR register in OC mode
+	TIM_OCInitStruct.TIM_OCMode = TIM_OCMode_PWM2; 
+	TIM_OCInitStruct.TIM_OutputState = TIM_OutputState_Enable;  
+	TIM_OCInitStruct.TIM_Pulse = 1000; //pulse is the CCR register in OC mode
 	TIM_OCInitStruct.TIM_OCPolarity = TIM_OCPolarity_High; 
-	TIM_OCInitStruct.TIM_OCNPolarity = TIM_OCNPolarity_High; //OCN is the output of the output compare register, by setting OCN polarity to high we allow the output to follow the OC when it is high.
-	TIM_OCInitStruct.TIM_OCIdleState = TIM_OCIdleState_Set; 
-	TIM_OCInitStruct.TIM_OCNIdleState = TIM_OCIdleState_Reset; 
+	//TIM_OCInitStruct.TIM_OCPolarity = TIM_OCPolarity_Low;
+  //TIM_OCInitStruct.TIM_OCIdleState = TIM_OCIdleState_Set;
 	
 	TIM_OC1Init(TIM1, &TIM_OCInitStruct);
 	TIM_OC2Init(TIM1, &TIM_OCInitStruct);
@@ -244,8 +242,12 @@ static void TIM1_Config(void){
 	
 	TIM_CCxCmd(TIM1, TIM_Channel_3, ENABLE);
   TIM_OC3PreloadConfig(TIM1, TIM_OCPreload_Enable);
+	
+	TIM_Cmd(TIM1, ENABLE);
+	TIM_ARRPreloadConfig(TIM1, ENABLE);	
+	TIM_CtrlPWMOutputs(TIM1, ENABLE);
 
-  TIM_Cmd(TIM1, ENABLE);
+
 	
 	TIM_ITConfig(TIM1, TIM_IT_CC1, ENABLE); 
 	EnableTimerInterrupt(TIM1_CC_IRQn, 0);

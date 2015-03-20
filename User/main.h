@@ -26,7 +26,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4_discovery.h"
 #include "stm32f4_MPU6050.h"
-#include <stdio.h>
+//#include <stdio.h>
 
 #define ABS(x)         (x < 0) ? (-x) : x
 #define MAX(a,b)       (a < b) ? (b) : a

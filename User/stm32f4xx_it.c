@@ -37,7 +37,7 @@
 #define PHASE_OFFSET_120 667
 #define PHASE_OFFSET_240 1333
 //MAIN_CLOCK_PERIOD_COUNT/100
-#define MAIN_CLOCK_PERIOD_MULT 21
+#define MAIN_CLOCK_PERIOD_MULT 210
 
 
 const unsigned short int Hall2En[8][3]={{0,0,0},{0,1,1},{1,1,0},{1,0,1},{1,0,1},{1,1,0},{0,1,1},{0,0,0}};
@@ -215,10 +215,10 @@ void TIM1_CC_IRQHandler(void){
 		//PID update function here!!!
 		//set value output to be int velocity
 		//multiply velocity into below...
-		
-		P1Index+=MAIN_CLOCK_PERIOD_MULT*MPU6050_Data_FIFO[3][2];
-		P2Index+=MAIN_CLOCK_PERIOD_MULT*MPU6050_Data_FIFO[3][2];
-		P3Index+=MAIN_CLOCK_PERIOD_MULT*MPU6050_Data_FIFO[3][2];
+		//printf("TIM1 TICK");
+		P1Index+=1;
+		P2Index+=1;
+		P3Index+=1;
 		if(P1Index>2000)
 		{
 			P1Index-=2000;
@@ -229,7 +229,7 @@ void TIM1_CC_IRQHandler(void){
 		}
 		else
 		{
-			TIM_SetCompare1(TIM1,PWMdata[P1Index]);
+			TIM_SetCompare1(TIM1,MAIN_CLOCK_PERIOD_MULT*PWMdata[P1Index]);
 		}
 		if(P2Index>2000)
 		{
@@ -237,11 +237,11 @@ void TIM1_CC_IRQHandler(void){
 		}
 		else if(P2Index>1000)
 		{
-			TIM_SetCompare1(TIM1,0);
+			TIM_SetCompare2(TIM1,0);
 		}
 		else
 		{
-			TIM_SetCompare1(TIM1,PWMdata[P1Index]);
+			TIM_SetCompare2(TIM1,MAIN_CLOCK_PERIOD_MULT*PWMdata[P2Index]);
 		}
 		if(P3Index>2000)
 		{
@@ -249,11 +249,11 @@ void TIM1_CC_IRQHandler(void){
 		}
 		else if(P3Index>1000)
 		{
-			TIM_SetCompare1(TIM1,0);
+			TIM_SetCompare2(TIM1,0);
 		}
 		else
 		{
-			TIM_SetCompare1(TIM1,PWMdata[P1Index]);
+			TIM_SetCompare3(TIM1,MAIN_CLOCK_PERIOD_MULT*PWMdata[P3Index]);
 		}
 		
 		
@@ -284,7 +284,7 @@ void TIM2_CC_IRQHandler(void){
 		{
 			TIM_SetCounter(TIM4,0);
 		}
-		
+		printf("HS: %d", temp);
 		if(Hall2En[temp][0])
 		{
 			GPIO_SetBits(GPIOC, GPIO_Pin_0);
