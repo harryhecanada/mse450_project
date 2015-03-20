@@ -534,26 +534,6 @@
               <FilePath>.\Lib\StdPeriph\stm32f4xx_crc.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_cryp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\StdPeriph\stm32f4xx_cryp.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_cryp_aes.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\StdPeriph\stm32f4xx_cryp_aes.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_cryp_des.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\StdPeriph\stm32f4xx_cryp_des.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_cryp_tdes.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\StdPeriph\stm32f4xx_cryp_tdes.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f4xx_dac.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Lib\StdPeriph\stm32f4xx_dac.c</FilePath>
@@ -584,29 +564,9 @@
               <FilePath>.\Lib\StdPeriph\stm32f4xx_flash.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_fsmc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\StdPeriph\stm32f4xx_fsmc.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f4xx_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Lib\StdPeriph\stm32f4xx_gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\StdPeriph\stm32f4xx_hash.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hash_md5.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\StdPeriph\stm32f4xx_hash_md5.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hash_sha1.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\StdPeriph\stm32f4xx_hash_sha1.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_i2c.c</FileName>
