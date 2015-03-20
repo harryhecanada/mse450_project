@@ -1,9 +1,10 @@
-;******************** (C) COPYRIGHT 2011 STMicroelectronics ********************
-;* File Name          : startup_stm32f4xx.s
+;******************** (C) COPYRIGHT 2015 STMicroelectronics ********************
+;* File Name          : startup_stm32f40xx.s
 ;* Author             : MCD Application Team
-;* Version            : V1.0.0
-;* Date               : 30-September-2011
-;* Description        : STM32F4xx devices vector table for MDK-ARM toolchain. 
+;* @version           : V1.5.0
+;* @date              : 06-March-2015
+;* Description        : STM32F40xxx/41xxx devices vector table for MDK-ARM toolchain. 
+;*                      Same as startup_stm32f40_41xxx.s and maintained for legacy purpose 
 ;*                      This module performs:
 ;*                      - Set the initial SP
 ;*                      - Set the initial PC == Reset_Handler
@@ -17,12 +18,19 @@
 ;*                      priority is Privileged, and the Stack is set to Main.
 ;* <<< Use Configuration Wizard in Context Menu >>>   
 ;*******************************************************************************
-; THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-; WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE TIME.
-; AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY DIRECT,
-; INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
-; CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
-; INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+; 
+; Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
+; You may not use this file except in compliance with the License.
+; You may obtain a copy of the License at:
+; 
+;        http://www.st.com/software_license_agreement_liberty_v2
+; 
+; Unless required by applicable law or agreed to in writing, software 
+; distributed under the License is distributed on an "AS IS" BASIS, 
+; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+; See the License for the specific language governing permissions and
+; limitations under the License.
+; 
 ;*******************************************************************************
 
 ; Amount of memory (in bytes) allocated for Stack
@@ -159,7 +167,7 @@ __Vectors       DCD     __initial_sp               ; Top of Stack
                 DCD     CRYP_IRQHandler                   ; CRYP crypto                                     
                 DCD     HASH_RNG_IRQHandler               ; Hash and Rng
                 DCD     FPU_IRQHandler                    ; FPU
-                         
+                                         
 __Vectors_End
 
 __Vectors_Size  EQU  __Vectors_End - __Vectors
@@ -305,7 +313,7 @@ Default_Handler PROC
                 EXPORT  DCMI_IRQHandler                   [WEAK]                                             
                 EXPORT  CRYP_IRQHandler                   [WEAK]                                     
                 EXPORT  HASH_RNG_IRQHandler               [WEAK]
-                EXPORT  FPU_IRQHandler                    [WEAK]                
+                EXPORT  FPU_IRQHandler                    [WEAK]
 
 WWDG_IRQHandler                                                       
 PVD_IRQHandler                                      
@@ -388,8 +396,8 @@ OTG_HS_IRQHandler
 DCMI_IRQHandler                                                            
 CRYP_IRQHandler                                                    
 HASH_RNG_IRQHandler
-FPU_IRQHandler                                                 
-
+FPU_IRQHandler
+   
                 B       .
 
                 ENDP
@@ -424,4 +432,4 @@ __user_initial_stackheap
 
                  END
 
-;******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE*****
+;************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE*****

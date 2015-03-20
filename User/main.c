@@ -1,14 +1,5 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "usbd_hid_core.h"
-#include "usbd_usr.h"
-#include "usbd_desc.h"
-
-__ALIGN_BEGIN USB_OTG_CORE_HANDLE  USB_OTG_dev __ALIGN_END;
-
-__IO uint32_t TimingDelay;
-__IO uint8_t BeginFlag = 0x00;
-__IO uint8_t UserButtonPressed = 0x00;
 
 int16_t MPU6050_Offset[6];
 
@@ -19,7 +10,6 @@ MPU6050_Data MPU6050_Device_1_Data;
 #define MAIN_CLOCK_PERIOD_COUNT 21000-1
 
 // Private Functions
-static uint32_t Demo_USBConfig(void);
 static void TIM1_Config(void);
 static void TIM2_Config(void);
 static void TIM7_Config(void);
@@ -55,12 +45,7 @@ float Displacement_Data[3]={0};
 Main Function
 */
 int main(void){
-  //printf("Hello World\n");
-	
-  //initalize user button
-	SystemInit();
-  //STM_EVAL_PBInit(BUTTON_USER, BUTTON_MODE_EXTI); 
-	Demo_Exec();
+  printf("Hello World\n");
 }
 
 static void EnableTimerInterrupt(uint8_t TIMx_IRQn, uint8_t Priority){
@@ -76,99 +61,20 @@ static void EnableTimerInterrupt(uint8_t TIMx_IRQn, uint8_t Priority){
 //Execute the demo application, code from STM32F4 demo package using it for a base.
 static void Demo_Exec(void){
   
-	//RCC_ClocksTypeDef RCC_Clocks;
-//  uint8_t togglecounter = 0x00;
-//	
-//  /* SysTick end of count event each 1ms */
-  //RCC_GetClocksFreq(&RCC_Clocks);
-  //SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);  
   while(1)
   {
-//    BeginFlag = 0x00;
-//    
-//    /* Reset UserButton_Pressed variable, when the EXTI0_IRQHandler is called by pushing the push button UserButtonPressed is set to 0x01 */
-//    UserButtonPressed = 0x00;
-//    
-//    /* Initialize LEDs to be managed by GPIO */
-//    STM_EVAL_LEDInit(LED3);
-//    STM_EVAL_LEDInit(LED4);
-//    STM_EVAL_LEDInit(LED5);
-//    STM_EVAL_LEDInit(LED6);
 
-//    /* Turn OFF all LEDs */
-//    STM_EVAL_LEDOff(LED3);
-//    STM_EVAL_LEDOff(LED4);
-//    STM_EVAL_LEDOff(LED5);
-//    STM_EVAL_LEDOff(LED6);
-//    
-//    /* Waiting while user button is not pressed */
-//    while (UserButtonPressed == 0x00)
-//    {
-//      togglecounter ++;
-//      if (togglecounter == 0x10)
-//      {
-//        togglecounter = 0x00;
-//        while (togglecounter < 0x10)
-//        {
-//          STM_EVAL_LEDToggle(LED4);
-//          STM_EVAL_LEDToggle(LED3);
-//          STM_EVAL_LEDToggle(LED5);
-//          STM_EVAL_LEDToggle(LED6);
-//          DelayMs(500);
-//          togglecounter ++;
-//        }
-//       togglecounter = 0x00;
-//      }
-//    }
-//    
-//    /* Waiting until user button is released to clear the user button pressed variable*/
-//    while (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
-//    {}
-//    UserButtonPressed = 0x00;
-		/* Initialize MPU-6050 */
-		//MPU6050_Config(MPU6050_Device_0);
-		//printf("MPU6050 Initialization Complete, Offsets Acquired. Beginning Interrupt Config... \n");
-    /* TIM channels configuration IRQ is disabled while configuration is in progress.*/
-		//__disable_irq();
-    //TIM7_Config();
-			
-		//Main Sampling Clock & PWM Output
 		TIM1_Config();
 		while(1)
 		{
 		}
+		//__disable_irq();
 		//Hall Interface
 		//TIM2_Config();
 		//Encoder Configuration
 		//Encoder_Config();
-    
-    //Demo_USBConfig();
     //__enable_irq();
-    /* Waiting User Button is pressed */
-//    while (UserButtonPressed == 0x00)
-//    {}
-//    
-//    /* Waiting User Button is Released */
-//    while (STM_EVAL_PBGetState(BUTTON_USER) == Bit_SET)
-//    {}
-//			
-//    /* Disconnect the USB device */
-//    DCD_DevDisconnect(&USB_OTG_dev);
-//    USB_OTG_StopDevice(&USB_OTG_dev);
   }
-}
-
-
-
-//Initializes the USB for the demonstration application.
-static uint32_t Demo_USBConfig(void){
-  USBD_Init(&USB_OTG_dev,
-            USB_OTG_FS_CORE_ID,
-            &USR_desc, 
-            &USBD_HID_cb, 
-            &USR_cb);
-  
-  return 0;
 }
 
 //Configures the MPU6050, uses I2C and pins B8 B9
@@ -421,32 +327,10 @@ void Process_Data(void){
 	TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
 }
 
-
-//nTime: specifies the DelayMs time length, in 10 ms.
-void DelayMs(__IO uint32_t nTime){
-  TimingDelay = nTime;
-
-  while(TimingDelay != 0);
-}
-
-
-
-//Decrements the TimingDelay variable.
-void TimingDelay_Decrement(void){
-  if (TimingDelay != 0x00)
-  { 
-    TimingDelay--;
-  }
-}
-
-
-
 //This function handles the test program fail.
 void Fail_Handler(void){
   while(1)
-  {
-    /* Toggle Red LED */
-    STM_EVAL_LEDToggle(LED5);
-    DelayMs(250);
+	{
+    printf("Critical Failure \n");
   }
 }

@@ -24,10 +24,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
 #include "main.h"
-#include "usb_core.h"
-#include "usbd_core.h"
 #include "stm32f4xx.h"
-#include "usbd_hid_core.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -79,10 +76,6 @@ extern float MPU6050_Data_FIFO[6][3];
 extern float Velocity_Data_FIFO [3][3];
 extern float Rotation_Data[3];
 
-/* Private function prototypes -----------------------------------------------*/
-extern USB_OTG_CORE_HANDLE           USB_OTG_dev;
-static uint8_t *USBD_HID_GetPos (void);
-extern uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
 
 /******************************************************************************/
 /*            Cortex-M3 Processor Exceptions Handlers                         */
@@ -183,23 +176,7 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-  uint8_t *buf;
-  
-  if (BeginFlag == 0x00)
-  {
-    TimingDelay_Decrement();
-  }
-  else
-  {
-    buf = USBD_HID_GetPos();
-    if((buf[1] != 0) ||(buf[2] != 0))
-    {
-      USBD_HID_SendReport (&USB_OTG_dev, 
-                           buf,
-                           4);
-    } 
-  }
-  
+
 }
 
 /******************************************************************************/
@@ -336,10 +313,7 @@ void TIM7_IRQHandler(void){
 
 //use one interrupt to handle both starting code and encoder reset signal.
 void EXTI0_IRQHandler(void){
-  UserButtonPressed = 0x01;
-  TIM_SetCounter(TIM2, 0);
-  /* Clear the EXTI line pending bit */
-  EXTI_ClearITPendingBit(USER_BUTTON_EXTI_LINE);
+
 }
 
 /**
@@ -349,16 +323,7 @@ void EXTI0_IRQHandler(void){
   */
 void OTG_FS_WKUP_IRQHandler(void)
 {
-  if(USB_OTG_dev.cfg.low_power)
-  {
-	/* Reset SLEEPDEEP and SLEEPONEXIT bits */
-	SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
-
-	/* After wake-up from sleep mode, reconfigure the system clock */
-	SystemInit();
-    USB_OTG_UngateClock(&USB_OTG_dev);
-  }
-  EXTI_ClearITPendingBit(EXTI_Line18);
+ 
 }
 
 /**
@@ -368,38 +333,8 @@ void OTG_FS_WKUP_IRQHandler(void)
   */
 void OTG_FS_IRQHandler(void)
 {
-  USBD_OTG_ISR_Handler (&USB_OTG_dev);
+
 }
 
-
-//Send Position for USB mouse function
-static uint8_t *USBD_HID_GetPos (void){
-  static uint8_t HID_Buffer[4] = {0};
-  
-  HID_Buffer[1] = 0;
-  HID_Buffer[2] = 0;
-  /* LEFT Direction */
-  if((Velocity_Data_FIFO[1][2]) < -2)
-  {
-    HID_Buffer[1] += CURSOR_STEP;
-  }
-  /* RIGHT Direction */ 
-  if((Velocity_Data_FIFO[1][2]) > 2)
-  {
-   HID_Buffer[1] -= CURSOR_STEP;
-  } 
-  /* UP Direction */
-  if((Velocity_Data_FIFO[2][2]) < -2)
-  {
-    HID_Buffer[2] += CURSOR_STEP;
-  }
-  /* DOWN Direction */ 
-  if((Velocity_Data_FIFO[2][2]) > 2)
-  {
-    HID_Buffer[2] -= CURSOR_STEP;
-  } 
-  
-  return HID_Buffer;
-}
 
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
