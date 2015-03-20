@@ -391,16 +391,97 @@
       <Groups>
         <Group>
           <GroupName>CMSIS</GroupName>
+          <GroupOption>
+            <CommonProperty>
+              <UseCPPCompiler>0</UseCPPCompiler>
+              <RVCTCodeConst>0</RVCTCodeConst>
+              <RVCTZI>0</RVCTZI>
+              <RVCTOtherData>0</RVCTOtherData>
+              <ModuleSelection>0</ModuleSelection>
+              <IncludeInBuild>2</IncludeInBuild>
+              <AlwaysBuild>2</AlwaysBuild>
+              <GenerateAssemblyFile>2</GenerateAssemblyFile>
+              <AssembleAssemblyFile>2</AssembleAssemblyFile>
+              <PublicsOnly>2</PublicsOnly>
+              <StopOnExitCode>11</StopOnExitCode>
+              <CustomArgument></CustomArgument>
+              <IncludeLibraryModules></IncludeLibraryModules>
+            </CommonProperty>
+            <GroupArmAds>
+              <Cads>
+                <interw>2</interw>
+                <Optim>0</Optim>
+                <oTime>2</oTime>
+                <SplitLS>2</SplitLS>
+                <OneElfS>2</OneElfS>
+                <Strict>2</Strict>
+                <EnumInt>2</EnumInt>
+                <PlainCh>2</PlainCh>
+                <Ropi>2</Ropi>
+                <Rwpi>2</Rwpi>
+                <wLevel>0</wLevel>
+                <uThumb>2</uThumb>
+                <uSurpInc>2</uSurpInc>
+                <VariousControls>
+                  <MiscControls></MiscControls>
+                  <Define></Define>
+                  <Undefine></Undefine>
+                  <IncludePath>.\CMSIS</IncludePath>
+                </VariousControls>
+              </Cads>
+              <Aads>
+                <interw>2</interw>
+                <Ropi>2</Ropi>
+                <Rwpi>2</Rwpi>
+                <thumb>2</thumb>
+                <SplitLS>2</SplitLS>
+                <SwStkChk>2</SwStkChk>
+                <NoWarn>2</NoWarn>
+                <uSurpInc>2</uSurpInc>
+                <VariousControls>
+                  <MiscControls></MiscControls>
+                  <Define></Define>
+                  <Undefine></Undefine>
+                  <IncludePath></IncludePath>
+                </VariousControls>
+              </Aads>
+            </GroupArmAds>
+          </GroupOption>
           <Files>
             <File>
-              <FileName>startup_stm32f4xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\CMSIS\startup_stm32f4xx.s</FilePath>
+              <FileName>arm_pid_init_f32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Lib\DSP_Lib\Source\ControllerFunctions\arm_pid_init_f32.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4_discovery.c</FileName>
+              <FileName>arm_pid_init_q15.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\CMSIS\stm32f4_discovery.c</FilePath>
+              <FilePath>.\Lib\DSP_Lib\Source\ControllerFunctions\arm_pid_init_q15.c</FilePath>
+            </File>
+            <File>
+              <FileName>arm_pid_init_q31.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Lib\DSP_Lib\Source\ControllerFunctions\arm_pid_init_q31.c</FilePath>
+            </File>
+            <File>
+              <FileName>arm_pid_reset_f32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Lib\DSP_Lib\Source\ControllerFunctions\arm_pid_reset_f32.c</FilePath>
+            </File>
+            <File>
+              <FileName>arm_pid_reset_q15.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Lib\DSP_Lib\Source\ControllerFunctions\arm_pid_reset_q15.c</FilePath>
+            </File>
+            <File>
+              <FileName>arm_pid_reset_q31.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Lib\DSP_Lib\Source\ControllerFunctions\arm_pid_reset_q31.c</FilePath>
+            </File>
+            <File>
+              <FileName>startup_stm32f40xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\CMSIS\startup_stm32f40xx.s</FilePath>
             </File>
           </Files>
         </Group>
@@ -426,21 +507,6 @@
               <FileName>system_stm32f4xx.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\system_stm32f4xx.c</FilePath>
-            </File>
-            <File>
-              <FileName>usb_bsp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\usb_bsp.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_desc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\usbd_desc.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_usr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\usbd_usr.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -601,54 +667,6 @@
               <FileName>stm32f4xx_wwdg.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Lib\StdPeriph\stm32f4xx_wwdg.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>USB_Device</GroupName>
-          <Files>
-            <File>
-              <FileName>usbd_hid_core.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\USB\STM32_USB_Device_Library\Class\hid\src\usbd_hid_core.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_core.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\USB\STM32_USB_Device_Library\Core\src\usbd_core.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_ioreq.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\USB\STM32_USB_Device_Library\Core\src\usbd_ioreq.c</FilePath>
-            </File>
-            <File>
-              <FileName>usbd_req.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\USB\STM32_USB_Device_Library\Core\src\usbd_req.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>USB_Host</GroupName>
-        </Group>
-        <Group>
-          <GroupName>USB_OTG</GroupName>
-          <Files>
-            <File>
-              <FileName>usb_core.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\USB\STM32_USB_OTG_Driver\src\usb_core.c</FilePath>
-            </File>
-            <File>
-              <FileName>usb_dcd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\USB\STM32_USB_OTG_Driver\src\usb_dcd.c</FilePath>
-            </File>
-            <File>
-              <FileName>usb_dcd_int.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Lib\USB\STM32_USB_OTG_Driver\src\usb_dcd_int.c</FilePath>
             </File>
           </Files>
         </Group>

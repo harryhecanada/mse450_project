@@ -159,7 +159,7 @@ static void TIM1_Config(void){
 	EnableTimerInterrupt(TIM1_CC_IRQn, 0);
 }
 
-//Hall effect interface uses pins A1 A2 A3 A15, Enable output uses C0 C1 C4
+//Hall effect interface uses pins A1 A2 A3, Enable output uses C0 C1 C4
 static void TIM2_Config(void){ 
 	GPIO_InitTypeDef GPIO_InitStructure;
   TIM_TimeBaseInitTypeDef TIM_InitStructure;
@@ -174,7 +174,7 @@ static void TIM2_Config(void){
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
 	
-  // inputs for hall sensors use PIN 15 for reset signal
+  // inputs for hall sensors
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
