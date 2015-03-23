@@ -4,7 +4,6 @@
 int16_t MPU6050_Offset[6];
 
 MPU6050_Data MPU6050_Device_0_Data;
-MPU6050_Data MPU6050_Device_1_Data;
 
 //defines the number of counts in one clock period, one clock period being 42MHz/MAIN_CLOCK_PERIOD_COUNT = 2KHz
 #define MAIN_CLOCK_PERIOD_COUNT 21000-1
@@ -14,7 +13,6 @@ static void TIM1_Config(void);
 static void TIM2_Config(void);
 static void TIM7_Config(void);
 static void Encoder_Config(void);
-static void Demo_Exec(void);
 static void MPU6050_Config(MPU6050_Addr Device_ID);
 static void EnableTimerInterrupt(uint8_t TIMx_IRQn, uint8_t Priority);
 
@@ -46,6 +44,20 @@ Main Function
 */
 int main(void){
   printf("Hello World\n");
+	__disable_irq();
+	//Gyro & Accel Configuration
+	MPU6050_Config(MPU6050_Device_0);
+	TIM7_Config();
+	//Main PWM Configuration
+	TIM1_Config();
+	//Hall Interface
+	TIM2_Config();
+	//Encoder Configuration
+	Encoder_Config();
+	__enable_irq();
+	while(1)
+	{
+	}
 }
 
 static void EnableTimerInterrupt(uint8_t TIMx_IRQn, uint8_t Priority){
@@ -55,26 +67,6 @@ static void EnableTimerInterrupt(uint8_t TIMx_IRQn, uint8_t Priority){
     nvicStructure.NVIC_IRQChannelSubPriority = Priority;
     nvicStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&nvicStructure);
-}
-
-
-//Execute the demo application, code from STM32F4 demo package using it for a base.
-static void Demo_Exec(void){
-  
-  while(1)
-  {
-
-		TIM1_Config();
-		while(1)
-		{
-		}
-		//__disable_irq();
-		//Hall Interface
-		//TIM2_Config();
-		//Encoder Configuration
-		//Encoder_Config();
-    //__enable_irq();
-  }
 }
 
 //Configures the MPU6050, uses I2C and pins B8 B9
@@ -122,8 +114,8 @@ static void TIM1_Config(void){
 	/* Time base configuration */
 	//Period max value is 0xFFFF/65535, NOTE VALUE ONLY MATTERS FOR PWM MODE, IN TOGGLE OR OC MODE SET IT TO 0!
 	
-	TIM_TimeBaseStruct.TIM_Prescaler = 4-1;//168MHz/4=42MHz
-  TIM_TimeBaseStruct.TIM_Period = 21000;
+	TIM_TimeBaseStruct.TIM_Prescaler = 4-1;//84MHz/4=21000KHz
+  TIM_TimeBaseStruct.TIM_Period = 21000;//1KHz
   TIM_TimeBaseStruct.TIM_ClockDivision = TIM_CKD_DIV1;
   TIM_TimeBaseStruct.TIM_CounterMode = TIM_CounterMode_Up;
   TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStruct);
@@ -323,6 +315,8 @@ void Process_Data(void){
 		Displacement_Data[2]=Displacement_Data[2]+0.0005f*temp;
 		*/
 	}
+	//Print out readings from gyro when updating data
+	printf("Yaw = %f, Pitch = %f, Roll = %f", Rotation_Data[0], Rotation_Data[1], Rotation_Data[2]);
 	__enable_irq();
 	TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
 }
