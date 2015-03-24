@@ -8,7 +8,7 @@
 #define DEMCR           (*((volatile unsigned long *)(0xE000EDFC)))
 #define TRCENA          0x01000000
  
-struct __FILE { int handle; /* Add whatever is needed */ };
+struct __FILE { int handle; };
 FILE __stdout;
 FILE __stdin;
  

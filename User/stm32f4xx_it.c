@@ -301,9 +301,7 @@ void TIM2_CC_IRQHandler(void){
 //IRQ handler for each MPU6050 update (10KHz)
 void TIM7_IRQHandler(void){
 	if (TIM_GetITStatus(TIM7, TIM_IT_Update) != RESET){
-	  if (MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_INT_STATUS,0)){
-				Process_Data();//Note IT pending bit will be cleared AFTER processing is complete.
-			}
+			Process_Data();//Note IT pending bit will be cleared AFTER processing is complete.
     }
 		else{
 			TIM_ClearITPendingBit(TIM7, TIM_IT_Update);

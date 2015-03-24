@@ -16,9 +16,12 @@ GPIO_InitTypeDef GPIO_I2C_InitStruct;
 const uint16_t I2C_Timeout=20000;
 
 MPU6050_ERID MPU6050_Init(I2C_TypeDef *I2Cx, MPU6050_Addr Addr, MPU6050_Accel_Config AccelSensitivity, MPU6050_Gyro_Config GyroSensitivity) {
+	uint8_t temp;
 	I2C_InitTypeDef I2C_InitStruct;
-	
+
 	//Initialize I2C 
+	I2C_Cmd(I2Cx, DISABLE);
+	I2C_Cmd(I2Cx, ENABLE);
 	GPIO_I2C_InitStruct.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_I2C_InitStruct.GPIO_OType = GPIO_OType_OD;
 	GPIO_I2C_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
@@ -65,7 +68,7 @@ MPU6050_ERID MPU6050_Init(I2C_TypeDef *I2Cx, MPU6050_Addr Addr, MPU6050_Accel_Co
 		GPIO_I2C_InitStruct.GPIO_Pin = GPIO_Pin_9;
 		GPIO_Init(GPIOC, &GPIO_I2C_InitStruct);
 	}
-	
+
 	//I2C Setup 
 	I2C_InitStruct.I2C_ClockSpeed = 100000;//FAST Mode is 400000, Normal is 100000
 	I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
@@ -73,9 +76,7 @@ MPU6050_ERID MPU6050_Init(I2C_TypeDef *I2Cx, MPU6050_Addr Addr, MPU6050_Accel_Co
 	I2C_InitStruct.I2C_OwnAddress1 = 0x00;
 	I2C_InitStruct.I2C_Ack = I2C_Ack_Disable;
 	I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2;
-	I2C_Cmd(I2Cx, DISABLE);
 	I2C_Init(I2Cx, &I2C_InitStruct);
-	I2C_Cmd(I2Cx, ENABLE);
 	
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource8, GPIO_AF_I2C1);//SCL
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource9, GPIO_AF_I2C1);//SDA
@@ -93,34 +94,43 @@ MPU6050_ERID MPU6050_Init(I2C_TypeDef *I2Cx, MPU6050_Addr Addr, MPU6050_Accel_Co
 	}
 	printf("Address is correct, Configuring Device... \n");
 	//Configurations:
-	//Setup power management on MPU6050, set SLEEP and CYCLE to OFF, set CLK to reference X Gyro, turn OFF temperature sensor.
-	if(MPU6050_Write(I2Cx, Addr, MPU6050_PWR_MGMT_1, (0x01|0x08))){
+	//Setup power management on MPU6050, set SLEEP and CYCLE to OFF, set CLK to reference X Gyro, turn OFF temperature sensor. (0x01
+	if(MPU6050_Write(I2Cx, Addr, MPU6050_PWR_MGMT_1, (0x00))){
 		return MPU6050_UNKNOWN_ERROR;
 	}
+	
+	temp = MPU6050_Read(I2Cx, Addr, MPU6050_ACCEL_CONFIG, NACK);
+	temp = (temp & 0xE7) | (uint8_t)AccelSensitivity << 3;
+	MPU6050_Write(I2Cx, Addr, MPU6050_ACCEL_CONFIG, temp);
+	
+	temp = MPU6050_Read(I2Cx, Addr, MPU6050_GYRO_CONFIG, NACK);
+	temp = (temp & 0xE7) | (uint8_t)GyroSensitivity << 3;
+	MPU6050_Write(I2Cx, Addr, MPU6050_GYRO_CONFIG, temp);
+	
 	//Enable FIFO Buffer
-	if(MPU6050_Write(I2Cx, Addr, MPU6050_USER_CTRL, MPU6050_FIFO_BUFFER_EN)){
-		return MPU6050_UNKNOWN_ERROR;
-	}
+	//if(MPU6050_Write(I2Cx, Addr, MPU6050_USER_CTRL, MPU6050_FIFO_BUFFER_EN)){
+	//	return MPU6050_UNKNOWN_ERROR;
+	//}
 	//Enable the writing of XYZ Gyro data and XYZ Accel data into the FIFO buffer
-	if(MPU6050_Write(I2Cx,	Addr,	MPU6050_FIFO_EN, (MPU6050_FIFO_XGYRO_EN|MPU6050_FIFO_YGYRO_EN|MPU6050_FIFO_ZGYRO_EN|MPU6050_FIFO_ACCEL_EN))){
-		return MPU6050_UNKNOWN_ERROR;
-	}
+	//if(MPU6050_Write(I2Cx,	Addr,	MPU6050_FIFO_EN, (MPU6050_FIFO_XGYRO_EN|MPU6050_FIFO_YGYRO_EN|MPU6050_FIFO_ZGYRO_EN|MPU6050_FIFO_ACCEL_EN))){
+	//	return MPU6050_UNKNOWN_ERROR;
+	//}
 	//Enable FIFO Interrupt, and Data Ready Interrupt
-	if(MPU6050_Write(I2Cx,	Addr,	MPU6050_INT_ENABLE, (MPU6050_DATA_RDY_INT|MPU6050_FIFO_OFLOW_INT))){
-		return MPU6050_UNKNOWN_ERROR;
-	}
+	//if(MPU6050_Write(I2Cx,	Addr,	MPU6050_INT_ENABLE, (MPU6050_DATA_RDY_INT|MPU6050_FIFO_OFLOW_INT))){
+	//	return MPU6050_UNKNOWN_ERROR;
+	//}
 	//Set the low pass filter to 10Hz
-	if(MPU6050_Write(I2Cx,	Addr,	MPU6050_CONFIG, MPU6050_DLFP_10Hz)){
-		return MPU6050_UNKNOWN_ERROR;
-	}
+	//if(MPU6050_Write(I2Cx,	Addr,	MPU6050_CONFIG, MPU6050_DLFP_10Hz)){
+	//	return MPU6050_UNKNOWN_ERROR;
+	//}
 	//Config accelerometer, for good measuresments on human hand use +-4G
-	if(MPU6050_Write(I2Cx, Addr, MPU6050_ACCEL_CONFIG, AccelSensitivity)){
-		return MPU6050_UNKNOWN_ERROR;
-	}
+	//if(MPU6050_Write(I2Cx, Addr, MPU6050_ACCEL_CONFIG, AccelSensitivity)){
+	//	return MPU6050_UNKNOWN_ERROR;
+	//}
 	//Config gyroscope, for good measuresments on human hand use +-250Deg/s
-	if(MPU6050_Write(I2Cx, Addr, MPU6050_GYRO_CONFIG, GyroSensitivity)){
-		return MPU6050_UNKNOWN_ERROR;
-	}
+	//if(MPU6050_Write(I2Cx, Addr, MPU6050_GYRO_CONFIG, GyroSensitivity)){
+	//	return MPU6050_UNKNOWN_ERROR;
+	//}
 	//Return OK 
 	return MPU6050_OK;
 }
@@ -196,7 +206,7 @@ uint8_t MPU6050_Start(I2C_TypeDef *I2Cx, uint8_t addr, uint8_t dir, uint8_t ack)
 	while(I2C_GetFlagStatus(I2Cx, I2C_FLAG_BUSY));
 	//Attempt Initial Communication 
 	I2C_GenerateSTART(I2Cx, ENABLE);
-	//temp=I2C_Timeout;
+	temp=I2C_Timeout;
 	while (!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_MODE_SELECT) && temp) {
 		temp--;
 		if (temp == 0x00) {

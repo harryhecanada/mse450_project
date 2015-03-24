@@ -43,17 +43,20 @@ float Displacement_Data[3]={0};
 Main Function
 */
 int main(void){
+	uint8_t temp;
   printf("Hello World\n");
 	__disable_irq();
 	//Gyro & Accel Configuration
 	MPU6050_Config(MPU6050_Device_0);
-	TIM7_Config();
+	temp=MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_WHO_AM_I,NACK);
+	printf("configuration= %d \n",temp);
+	//TIM7_Config();
 	//Main PWM Configuration
-	TIM1_Config();
+	//TIM1_Config();
 	//Hall Interface
-	TIM2_Config();
+	//TIM2_Config();
 	//Encoder Configuration
-	Encoder_Config();
+	//Encoder_Config();
 	__enable_irq();
 	while(1)
 	{
@@ -222,8 +225,8 @@ static void TIM7_Config(void){
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM7, ENABLE);
   
   /* Time base configuration */
-	TIM_TimeBaseStruct.TIM_Prescaler = 1680;//Gives us a 100KHz Clock
-  TIM_TimeBaseStruct.TIM_Period = 10;//Gives us one interrupt every 10 counts, 10KHz
+	TIM_TimeBaseStruct.TIM_Prescaler = 128-1;//Gives us a 100KHz Clock
+  TIM_TimeBaseStruct.TIM_Period = 50000;//Gives us one interrupt every 10 counts, 10KHz
   TIM_TimeBaseStruct.TIM_ClockDivision = TIM_CKD_DIV1;
   TIM_TimeBaseStruct.TIM_CounterMode = TIM_CounterMode_Up;
   TIM_TimeBaseInit(TIM7, &TIM_TimeBaseStruct);
@@ -316,15 +319,15 @@ void Process_Data(void){
 		*/
 	}
 	//Print out readings from gyro when updating data
-	printf("Yaw = %f, Pitch = %f, Roll = %f", Rotation_Data[0], Rotation_Data[1], Rotation_Data[2]);
+	printf("Yaw = %f \n", Rotation_Data[0]);
 	__enable_irq();
 	TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
 }
 
 //This function handles the test program fail.
 void Fail_Handler(void){
+	printf("Critical Failure \n");
   while(1)
 	{
-    printf("Critical Failure \n");
   }
 }
