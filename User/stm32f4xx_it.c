@@ -188,14 +188,14 @@ void SysTick_Handler(void)
 //IRQ handler for each PWM pulse
 void TIM1_CC_IRQHandler(void){
 	if (TIM_GetITStatus(TIM1, TIM_IT_CC1) != RESET){
-		//TODO:Figure out what should actually be the change in index value to get the correct velocity from motor...
-		//PID update function here!!!
-		//set value output to be int velocity
-		//multiply velocity into below...
-		//printf("TIM1 TICK");
-		P1Index+=1;
-		P2Index+=1;
-		P3Index+=1;
+		//Note: TIM_SetCompare1(TIM1,vel*DUTY_MULT*PWMdata[P1Index]);, constant is theoretically the correct factor to convert between velocity to rms voltage...(210/110.5) where 110.5 is max nominal angular velocity of motor
+		//if this value does not work first try setting DUTY_MULT to 105 then setting it to 210. DO NOT GO BEYOND 210!
+		//(int)MAIN_CLOCK_PERIOD_MULT/110.5 rounds up to 2. 
+		const int DUTY_MULT=2;
+		unsigned short int vel=(int)(MPU6050_Data_FIFO[5][2]*3/2);//PID output goes HERE!
+		P1Index+=vel;
+		P2Index+=vel;
+		P3Index+=vel;
 		if(P1Index>2000)
 		{
 			P1Index-=2000;
@@ -206,7 +206,7 @@ void TIM1_CC_IRQHandler(void){
 		}
 		else
 		{
-			TIM_SetCompare1(TIM1,MAIN_CLOCK_PERIOD_MULT*PWMdata[P1Index]);
+			TIM_SetCompare1(TIM1,vel*DUTY_MULT*PWMdata[P1Index]);
 		}
 		if(P2Index>2000)
 		{
@@ -218,7 +218,7 @@ void TIM1_CC_IRQHandler(void){
 		}
 		else
 		{
-			TIM_SetCompare2(TIM1,MAIN_CLOCK_PERIOD_MULT*PWMdata[P2Index]);
+			TIM_SetCompare2(TIM1,vel*DUTY_MULT*PWMdata[P2Index]);
 		}
 		if(P3Index>2000)
 		{
@@ -230,7 +230,7 @@ void TIM1_CC_IRQHandler(void){
 		}
 		else
 		{
-			TIM_SetCompare3(TIM1,MAIN_CLOCK_PERIOD_MULT*PWMdata[P3Index]);
+			TIM_SetCompare3(TIM1,vel*DUTY_MULT*PWMdata[P3Index]);
 		}
 		
 		
