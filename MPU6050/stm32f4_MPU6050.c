@@ -70,7 +70,7 @@ MPU6050_ERID MPU6050_Init(I2C_TypeDef *I2Cx, MPU6050_Addr Addr, MPU6050_Accel_Co
 	}
 
 	//I2C Setup 
-	I2C_InitStruct.I2C_ClockSpeed = 100000;//FAST Mode is 400000, Normal is 100000
+	I2C_InitStruct.I2C_ClockSpeed = 400000;//FAST Mode is 400000, Normal is 100000
 	I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
 	I2C_InitStruct.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStruct.I2C_OwnAddress1 = 0x00;
@@ -108,10 +108,13 @@ MPU6050_ERID MPU6050_Init(I2C_TypeDef *I2Cx, MPU6050_Addr Addr, MPU6050_Accel_Co
 	temp = (temp & 0xE7) | (uint8_t)GyroSensitivity << 3;
 	MPU6050_Write(I2Cx, Addr, MPU6050_GYRO_CONFIG, temp);
 	
+	if(MPU6050_Write(I2Cx,	Addr,	MPU6050_CONFIG, MPU6050_DLFP_10Hz)){
+		return MPU6050_UNKNOWN_ERROR;
+	}
 	//Enable FIFO Buffer
-	//if(MPU6050_Write(I2Cx, Addr, MPU6050_USER_CTRL, MPU6050_FIFO_BUFFER_EN)){
-	//	return MPU6050_UNKNOWN_ERROR;
-	//}
+	if(MPU6050_Write(I2Cx, Addr, MPU6050_USER_CTRL, MPU6050_FIFO_BUFFER_EN)){
+		return MPU6050_UNKNOWN_ERROR;
+	}
 	//Enable the writing of XYZ Gyro data and XYZ Accel data into the FIFO buffer
 	//if(MPU6050_Write(I2Cx,	Addr,	MPU6050_FIFO_EN, (MPU6050_FIFO_XGYRO_EN|MPU6050_FIFO_YGYRO_EN|MPU6050_FIFO_ZGYRO_EN|MPU6050_FIFO_ACCEL_EN))){
 	//	return MPU6050_UNKNOWN_ERROR;
@@ -121,9 +124,7 @@ MPU6050_ERID MPU6050_Init(I2C_TypeDef *I2Cx, MPU6050_Addr Addr, MPU6050_Accel_Co
 	//	return MPU6050_UNKNOWN_ERROR;
 	//}
 	//Set the low pass filter to 10Hz
-	//if(MPU6050_Write(I2Cx,	Addr,	MPU6050_CONFIG, MPU6050_DLFP_10Hz)){
-	//	return MPU6050_UNKNOWN_ERROR;
-	//}
+
 	//Config accelerometer, for good measuresments on human hand use +-4G
 	//if(MPU6050_Write(I2Cx, Addr, MPU6050_ACCEL_CONFIG, AccelSensitivity)){
 	//	return MPU6050_UNKNOWN_ERROR;

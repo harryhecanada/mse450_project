@@ -45,21 +45,18 @@ Main Function
 int main(void){
 	uint8_t temp;
   printf("Hello World\n");
-	__disable_irq();
+	//__disable_irq();
+	//SysTick_Config(SystemCoreClock / 50);  
 	//Gyro & Accel Configuration
-	MPU6050_Config(MPU6050_Device_0);
-	temp=MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_WHO_AM_I,NACK);
-	printf("WHO AM I= %x \n",temp);
-	temp=MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_PWR_MGMT_1,NACK);
-	printf("PWR MGMT= %x \n",temp);
-	TIM7_Config();
+	//MPU6050_Config(MPU6050_Device_0);
+	//TIM7_Config();
 	//Main PWM Configuration
 	//TIM1_Config();
 	//Hall Interface
-	//TIM2_Config();
+	TIM2_Config();
 	//Encoder Configuration
 	//Encoder_Config();
-	__enable_irq();
+	//__enable_irq();
 	while(1)
 	{
 	}
@@ -80,15 +77,15 @@ static void MPU6050_Config(MPU6050_Addr Device_ID){
 	{
 		Fail_Handler();
 	}
-//if (MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_INT_STATUS,0)){
-//		MPU6050_ReadAll(I2C1,&MPU6050_Device_0_Data,MPU6050_Device_0);
-//		MPU6050_Offset[0]=MPU6050_Device_0_Data.Accel_X;
-//		MPU6050_Offset[1]=MPU6050_Device_0_Data.Accel_Y;
-//		MPU6050_Offset[2]=MPU6050_Device_0_Data.Accel_Z;
-//		MPU6050_Offset[3]=MPU6050_Device_0_Data.Gyro_X;
-//		MPU6050_Offset[4]=MPU6050_Device_0_Data.Gyro_Y;
-//		MPU6050_Offset[5]=MPU6050_Device_0_Data.Gyro_Z;
-//	}
+	if (MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_INT_STATUS,0)){
+			MPU6050_ReadAll(I2C1,&MPU6050_Device_0_Data,MPU6050_Device_0);
+			MPU6050_Offset[0]=MPU6050_Device_0_Data.Accel_X;
+			MPU6050_Offset[1]=MPU6050_Device_0_Data.Accel_Y;
+			MPU6050_Offset[2]=MPU6050_Device_0_Data.Accel_Z;
+			MPU6050_Offset[3]=MPU6050_Device_0_Data.Gyro_X;
+			MPU6050_Offset[4]=MPU6050_Device_0_Data.Gyro_Y;
+			MPU6050_Offset[5]=MPU6050_Device_0_Data.Gyro_Z;
+		}
 }
 
 
@@ -162,6 +159,10 @@ static void TIM2_Config(void){
   TIM_TimeBaseInitTypeDef TIM_InitStructure;
   TIM_ICInitTypeDef TIM_ICInitStructure;
 	
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+	
 	//output to EN1 EN2 EN3 on L6234
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
@@ -169,7 +170,6 @@ static void TIM2_Config(void){
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
 	
   // inputs for hall sensors
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
@@ -178,19 +178,15 @@ static void TIM2_Config(void){
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
   GPIO_Init(GPIOA, &GPIO_InitStructure);
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-	
+  
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_TIM2);
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_TIM2);
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_TIM2);
 	
-	// enable clock for timer2
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
-	
   // resolution: 1usec
   TIM_InitStructure.TIM_Prescaler = 84-1;
   TIM_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-  TIM_InitStructure.TIM_Period = 0xFFFFFFFF;
+  TIM_InitStructure.TIM_Period = 60000;
   TIM_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
   
   TIM_TimeBaseInit(TIM2, &TIM_InitStructure);
@@ -208,12 +204,10 @@ static void TIM2_Config(void){
   TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_TRC;
   
   TIM_ICInit(TIM2, &TIM_ICInitStructure); 
-  
-   // enable the interrupt for timer2
-  TIM_ITConfig(TIM2, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3 , ENABLE);
-  
+	
   EnableTimerInterrupt(TIM2_IRQn, 0);
-  
+   // enable the interrupt for timer2
+  TIM_ITConfig(TIM2, TIM_IT_Trigger , ENABLE);
    // enable timer2
   TIM_Cmd(TIM2, ENABLE);
 }
@@ -224,11 +218,11 @@ static void TIM7_Config(void){
   TIM_TimeBaseInitTypeDef  TIM_TimeBaseStruct;
   
   /* TIM4 clock enable */
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM7, ENABLE);
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM7, ENABLE);//42MHz CLK, 2x for Timers -> 84MHz
   
   /* Time base configuration */
-	TIM_TimeBaseStruct.TIM_Prescaler = 128-1;//Gives us a 100KHz Clock
-  TIM_TimeBaseStruct.TIM_Period = 50000;//Gives us one interrupt every 10 counts, 10KHz
+	TIM_TimeBaseStruct.TIM_Prescaler = 84-1;//Gives us a 100KHz Clock
+  TIM_TimeBaseStruct.TIM_Period = 1000;//Gives us one interrupt every 1000 counts, 1KHz
   TIM_TimeBaseStruct.TIM_ClockDivision = TIM_CKD_DIV1;
   TIM_TimeBaseStruct.TIM_CounterMode = TIM_CounterMode_Up;
   TIM_TimeBaseInit(TIM7, &TIM_TimeBaseStruct);
@@ -257,7 +251,6 @@ static void Encoder_Config(void){
 	//to read counter use: int reading=TIM_GetCounter(TIM4);
 }
 //Process data is called by TIM7 IRQ.
-//TODO: reduce number of axis being processed, we only need one axis of the gyro, reduce number of axis being read as well.
 void Process_Data(void){
 	float temp;
 	uint8_t n;
@@ -321,7 +314,7 @@ void Process_Data(void){
 		*/
 	}
 	//Print out readings from gyro when updating data
-	printf("Yaw = %d \n", MPU6050_Device_0_Data.Gyro_X);
+	//printf("Gyro Z = %f \n", Rotation_Data[2]);
 	__enable_irq();
 	TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
 }

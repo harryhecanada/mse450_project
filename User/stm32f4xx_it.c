@@ -241,9 +241,9 @@ void TIM1_CC_IRQHandler(void){
 	}
 }
 //IRQ handler for each hall effect signal
-void TIM2_CC_IRQHandler(void){
-	unsigned char temp;
-	if (TIM_GetITStatus(TIM2, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3) != RESET){
+void TIM2_IRQHandler(void){
+	uint8_t temp;
+	if (TIM_GetITStatus(TIM2, TIM_IT_Trigger) != RESET){
 		/*
 		Once a new hall state is defined we check if it is the same as the old state (to remove errors), 
 		if its a new state then we update by reading all 3 IC channels to get a 3 bit value (use tim function),
@@ -252,16 +252,13 @@ void TIM2_CC_IRQHandler(void){
 		The correct configuration can be found by using an oscilioscope that is attached to each phase to 
 		read the corresponding backemf output and hall sensor feedback after manually turning the motor
 		*/
-		temp=4*TIM_GetCapture1(TIM2)+2*TIM_GetCapture2(TIM2)+TIM_GetCapture3(TIM2);
+		//__disable_irq();
+		temp=4*GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_1)+2*GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_2)+GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_3);
 		if(temp>9)
 		{
 			temp=0;
 		}
-		if(temp==6)
-		{
-			TIM_SetCounter(TIM4,0);
-		}
-		printf("HS: %d", temp);
+		printf("%d \n",temp);
 		if(Hall2En[temp][0])
 		{
 			GPIO_SetBits(GPIOC, GPIO_Pin_0);
@@ -289,11 +286,13 @@ void TIM2_CC_IRQHandler(void){
 			GPIO_ResetBits(GPIOC, GPIO_Pin_4);
 		}
 		
-		TIM_ClearITPendingBit(TIM2, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3);
+		TIM_ClearITPendingBit(TIM2, TIM_IT_Trigger);
+		//__enable_irq();
 	}
 	else{
-		TIM_ClearITPendingBit(TIM2, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3);
+		TIM_ClearITPendingBit(TIM2, TIM_IT_Trigger);
 	}
+	
 }
 
 
