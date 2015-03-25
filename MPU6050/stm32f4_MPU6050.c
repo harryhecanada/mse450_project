@@ -95,7 +95,8 @@ MPU6050_ERID MPU6050_Init(I2C_TypeDef *I2Cx, MPU6050_Addr Addr, MPU6050_Accel_Co
 	printf("Address is correct, Configuring Device... \n");
 	//Configurations:
 	//Setup power management on MPU6050, set SLEEP and CYCLE to OFF, set CLK to reference X Gyro, turn OFF temperature sensor. (0x01
-	if(MPU6050_Write(I2Cx, Addr, MPU6050_PWR_MGMT_1, (0x00))){
+	
+	if(MPU6050_Write(I2Cx, Addr, MPU6050_PWR_MGMT_1, 0x01)){
 		return MPU6050_UNKNOWN_ERROR;
 	}
 	
@@ -200,13 +201,10 @@ MPU6050_ERID MPU6050_FIFO_Read(I2C_TypeDef *I2Cx, MPU6050_Data *DataStruct, MPU6
 	return MPU6050_OK;
 }
 uint8_t MPU6050_Start(I2C_TypeDef *I2Cx, uint8_t addr, uint8_t dir, uint8_t ack) {
-	
-	int16_t temp;
-	
+	int16_t temp=I2C_Timeout;
 	while(I2C_GetFlagStatus(I2Cx, I2C_FLAG_BUSY));
 	//Attempt Initial Communication 
 	I2C_GenerateSTART(I2Cx, ENABLE);
-	temp=I2C_Timeout;
 	while (!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_MODE_SELECT) && temp) {
 		temp--;
 		if (temp == 0x00) {
@@ -313,6 +311,7 @@ uint8_t MPU6050_Write(I2C_TypeDef *I2Cx, uint8_t addr, uint8_t reg_id, uint8_t d
 	}
 	temp=I2C_Timeout;
 	I2C_SendData(I2Cx, reg_id);
+	while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
 	//Write to the register
 	while (!I2C_GetFlagStatus(I2Cx, I2C_FLAG_TXE) && temp) {
 		temp--;
@@ -321,6 +320,7 @@ uint8_t MPU6050_Write(I2C_TypeDef *I2Cx, uint8_t addr, uint8_t reg_id, uint8_t d
 		}
 	}
 	I2C_SendData(I2Cx, data);
+	while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
 	MPU6050_Stop(I2Cx);
 	return 0;
 }

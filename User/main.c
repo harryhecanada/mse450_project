@@ -49,8 +49,10 @@ int main(void){
 	//Gyro & Accel Configuration
 	MPU6050_Config(MPU6050_Device_0);
 	temp=MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_WHO_AM_I,NACK);
-	printf("configuration= %d \n",temp);
-	//TIM7_Config();
+	printf("WHO AM I= %x \n",temp);
+	temp=MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_PWR_MGMT_1,NACK);
+	printf("PWR MGMT= %x \n",temp);
+	TIM7_Config();
 	//Main PWM Configuration
 	//TIM1_Config();
 	//Hall Interface
@@ -78,15 +80,15 @@ static void MPU6050_Config(MPU6050_Addr Device_ID){
 	{
 		Fail_Handler();
 	}
-	if (MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_INT_STATUS,0)){
-		MPU6050_ReadAll(I2C1,&MPU6050_Device_0_Data,MPU6050_Device_0);
-		MPU6050_Offset[0]=MPU6050_Device_0_Data.Accel_X;
-		MPU6050_Offset[1]=MPU6050_Device_0_Data.Accel_Y;
-		MPU6050_Offset[2]=MPU6050_Device_0_Data.Accel_Z;
-		MPU6050_Offset[3]=MPU6050_Device_0_Data.Gyro_X;
-		MPU6050_Offset[4]=MPU6050_Device_0_Data.Gyro_Y;
-		MPU6050_Offset[5]=MPU6050_Device_0_Data.Gyro_Z;
-	}
+//if (MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_INT_STATUS,0)){
+//		MPU6050_ReadAll(I2C1,&MPU6050_Device_0_Data,MPU6050_Device_0);
+//		MPU6050_Offset[0]=MPU6050_Device_0_Data.Accel_X;
+//		MPU6050_Offset[1]=MPU6050_Device_0_Data.Accel_Y;
+//		MPU6050_Offset[2]=MPU6050_Device_0_Data.Accel_Z;
+//		MPU6050_Offset[3]=MPU6050_Device_0_Data.Gyro_X;
+//		MPU6050_Offset[4]=MPU6050_Device_0_Data.Gyro_Y;
+//		MPU6050_Offset[5]=MPU6050_Device_0_Data.Gyro_Z;
+//	}
 }
 
 
@@ -319,9 +321,9 @@ void Process_Data(void){
 		*/
 	}
 	//Print out readings from gyro when updating data
-	printf("Yaw = %f \n", Rotation_Data[0]);
+	printf("Yaw = %d \n", MPU6050_Device_0_Data.Gyro_X);
 	__enable_irq();
-	TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+	TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
 }
 
 //This function handles the test program fail.
