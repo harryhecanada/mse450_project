@@ -191,9 +191,9 @@ static void TIM2_Config(void){
   
   TIM_TimeBaseInit(TIM2, &TIM_InitStructure);
   // connect three channels to XOR in timer
-  TIM_SelectHallSensor(TIM2, ENABLE);
+  //TIM_SelectHallSensor(TIM2, ENABLE);
   
-  TIM_SelectInputTrigger(TIM2, TIM_TS_TI1F_ED);
+  TIM_SelectInputTrigger(TIM2, TIM_TS_TI1F_ED);//this needs to be changed for 3 channel non xor, not sure to what.
   TIM_SelectSlaveMode(TIM2, TIM_SlaveMode_Reset);
   
   // initialize the cature compare function of timer2
