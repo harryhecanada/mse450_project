@@ -243,7 +243,7 @@ void TIM1_CC_IRQHandler(void){
 //IRQ handler for each hall effect signal
 void TIM2_IRQHandler(void){
 	uint8_t temp;
-	if (TIM_GetITStatus(TIM2, TIM_IT_Trigger) != RESET){
+	if (TIM_GetITStatus(TIM2, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3) != RESET){
 		/*
 		Once a new hall state is defined we check if it is the same as the old state (to remove errors), 
 		if its a new state then we update by reading all 3 IC channels to get a 3 bit value (use tim function),
@@ -258,7 +258,6 @@ void TIM2_IRQHandler(void){
 		{
 			temp=0;
 		}
-		printf("%d \n",temp);
 		if(Hall2En[temp][0])
 		{
 			GPIO_SetBits(GPIOC, GPIO_Pin_0);
@@ -285,12 +284,12 @@ void TIM2_IRQHandler(void){
 		{
 			GPIO_ResetBits(GPIOC, GPIO_Pin_4);
 		}
-		
-		TIM_ClearITPendingBit(TIM2, TIM_IT_Trigger);
+		TIM_ClearITPendingBit(TIM2, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3);
+		printf("%d \n",temp);
 		//__enable_irq();
 	}
 	else{
-		TIM_ClearITPendingBit(TIM2, TIM_IT_Trigger);
+		TIM_ClearITPendingBit(TIM2, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3);
 	}
 	
 }
