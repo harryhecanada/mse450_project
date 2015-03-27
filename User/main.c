@@ -197,22 +197,22 @@ static void TIM2_Config(void){
   //TIM_SelectSlaveMode(TIM2, TIM_SlaveMode_External1);
   
   // initialize the cature compare function of timer2
-  TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
-  TIM_ICInitStructure.TIM_ICFilter = 0x0; //Could be 0x0, doesnt make big difference
+  TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;
+  TIM_ICInitStructure.TIM_ICFilter = 0xF; //Could be 0x0, doesnt make big difference
   TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_BothEdge; //Use both edges
   TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1; //no prescaler
-  TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_TRC; //Connect Channel to Trigger
+  TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI; //Connect Channel to Trigger
   
   TIM_ICInit(TIM2, &TIM_ICInitStructure); 
-	TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;
-	TIM_ICInit(TIM2, &TIM_ICInitStructure); 
 	TIM_ICInitStructure.TIM_Channel = TIM_Channel_3;
+	TIM_ICInit(TIM2, &TIM_ICInitStructure); 
+	TIM_ICInitStructure.TIM_Channel = TIM_Channel_4;
 	TIM_ICInit(TIM2, &TIM_ICInitStructure); 
 	
 	
   EnableTimerInterrupt(TIM2_IRQn, 0);
    // enable the interrupt for timer2
-  TIM_ITConfig(TIM2, TIM_IT_CC1|TIM_IT_CC2|TIM_IT_CC3 , ENABLE);
+  TIM_ITConfig(TIM2, TIM_IT_CC2|TIM_IT_CC3|TIM_IT_CC4 , ENABLE);
    // enable timer2
   TIM_Cmd(TIM2, ENABLE);
 }
@@ -244,7 +244,7 @@ static void Encoder_Config(void){
 	
   GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;//Selecting AF mode allows connection of pin to PWM output	
-  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOB, &GPIO_InitStruct);
 	
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_TIM4);
