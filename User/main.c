@@ -193,21 +193,26 @@ static void TIM2_Config(void){
   // connect three channels to XOR in timer
   //TIM_SelectHallSensor(TIM2, ENABLE);
   
-  TIM_SelectInputTrigger(TIM2, TIM_TS_TI1F_ED);//this needs to be changed for 3 channel non xor, not sure to what.
-  TIM_SelectSlaveMode(TIM2, TIM_SlaveMode_Reset);
+  //TIM_SelectInputTrigger(TIM2, TIM_TS_ETRF);//this needs to be changed for 3 channel non xor, not sure to what.
+  //TIM_SelectSlaveMode(TIM2, TIM_SlaveMode_External1);
   
   // initialize the cature compare function of timer2
   TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
-  TIM_ICInitStructure.TIM_ICFilter = 0xF;
-  TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_BothEdge;
-  TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
-  TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_TRC;
+  TIM_ICInitStructure.TIM_ICFilter = 0x0; //Could be 0x0, doesnt make big difference
+  TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_BothEdge; //Use both edges
+  TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1; //no prescaler
+  TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_TRC; //Connect Channel to Trigger
   
   TIM_ICInit(TIM2, &TIM_ICInitStructure); 
+	TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;
+	TIM_ICInit(TIM2, &TIM_ICInitStructure); 
+	TIM_ICInitStructure.TIM_Channel = TIM_Channel_3;
+	TIM_ICInit(TIM2, &TIM_ICInitStructure); 
+	
 	
   EnableTimerInterrupt(TIM2_IRQn, 0);
    // enable the interrupt for timer2
-  TIM_ITConfig(TIM2, TIM_IT_Trigger , ENABLE);
+  TIM_ITConfig(TIM2, TIM_IT_CC1|TIM_IT_CC2|TIM_IT_CC3 , ENABLE);
    // enable timer2
   TIM_Cmd(TIM2, ENABLE);
 }

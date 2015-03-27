@@ -318,7 +318,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>177</TopLine>
+      <TopLine>178</TopLine>
       <CurrentLine>183</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\CMSIS\startup_stm32f40xx.s</PathWithFileName>
@@ -342,7 +342,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>135</TopLine>
+      <TopLine>116</TopLine>
       <CurrentLine>217</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\User\main.c</PathWithFileName>
@@ -374,7 +374,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>165</TopLine>
+      <TopLine>178</TopLine>
       <CurrentLine>189</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\User\stm32f4xx_it.c</PathWithFileName>
@@ -574,7 +574,7 @@
       <Focus>0</Focus>
       <ColumnNumber>35</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>327</TopLine>
+      <TopLine>328</TopLine>
       <CurrentLine>337</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Lib\StdPeriph\stm32f4xx_gpio.c</PathWithFileName>
