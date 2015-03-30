@@ -38,6 +38,7 @@
 
 
 const unsigned short int Hall2En[8][3]={{0,0,0},{0,1,1},{1,1,0},{1,0,1},{1,0,1},{1,1,0},{0,1,1},{0,0,0}};
+const unsigned short int Hall2Out[8][3]={{0,0,0},{0,0,1},{0,1,1},{0,1,1},{1,0,0},{1,0,0},{1,1,0},{0,0,0}};
 	
 //NOTE: PWM data only covers 0-180 degrees, the other 180 degrees is assumed to be 0 as output.
 const unsigned char PWMdata[1000]={0,1,1,1,2,2,2,3,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,8,9,9,9,10,10,10,11,11,11,12,12,12,13,13,13,13,14,14,14,
@@ -186,16 +187,16 @@ void SysTick_Handler(void)
 /*  file (startup_stm32fxxx.s).                                               */
 /******************************************************************************/
 //IRQ handler for each PWM pulse
-void TIM1_CC_IRQHandler(void){
-	if (TIM_GetITStatus(TIM1, TIM_IT_CC1) != RESET){
+void TIM1_UP_TIM10_IRQHandler(void){
+	if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET){
 		//Note: TIM_SetCompare1(TIM1,vel*DUTY_MULT*PWMdata[P1Index]);, constant is theoretically the correct factor to convert between velocity to rms voltage...(210/110.5) where 110.5 is max nominal angular velocity of motor
 		//if this value does not work first try setting DUTY_MULT to 105 then setting it to 210. DO NOT GO BEYOND 210!
 		//(int)MAIN_CLOCK_PERIOD_MULT/110.5 rounds up to 2. 
-		const int DUTY_MULT=2;
-		unsigned short int vel=(int)(MPU6050_Data_FIFO[5][2]*3/2);//PID output goes HERE!
+		const int DUTY_MULT=5;
+		unsigned short int vel=10;//PID output goes HERE!
 		P1Index+=vel;
 		P2Index+=vel;
-		P3Index+=vel;
+		P3Index+=vel; 
 		if(P1Index>2000)
 		{
 			P1Index-=2000;
@@ -226,18 +227,16 @@ void TIM1_CC_IRQHandler(void){
 		}
 		else if(P3Index>1000)
 		{
-			TIM_SetCompare2(TIM1,0);
+			TIM_SetCompare3(TIM1,0);
 		}
 		else
 		{
 			TIM_SetCompare3(TIM1,vel*DUTY_MULT*PWMdata[P3Index]);
 		}
-		
-		
-		TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
+		TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
 	}
 	else{
-		TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
+		TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
 	}
 }
 //IRQ handler for each hall effect signal
@@ -286,6 +285,7 @@ void TIM2_IRQHandler(void){
 		{
 			GPIO_ResetBits(GPIOC, GPIO_Pin_4);
 		}
+		
 		TIM_ClearITPendingBit(TIM2, TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4);
 		printf("%d \n",temp);
 		//__enable_irq();

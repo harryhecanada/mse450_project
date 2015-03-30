@@ -43,7 +43,6 @@ float Displacement_Data[3]={0};
 Main Function
 */
 int main(void){
-	uint8_t temp;
   printf("Hello World\n");
 	//__disable_irq();
 	//SysTick_Config(SystemCoreClock / 50);  
@@ -51,7 +50,7 @@ int main(void){
 	//MPU6050_Config(MPU6050_Device_0);
 	//TIM7_Config();
 	//Main PWM Configuration
-	//TIM1_Config();
+	TIM1_Config();
 	//Hall Interface
 	TIM2_Config();
 	//Encoder Configuration
@@ -126,7 +125,7 @@ static void TIM1_Config(void){
 	TIM_OCInitStruct.TIM_OCMode = TIM_OCMode_PWM2; 
 	TIM_OCInitStruct.TIM_OutputState = TIM_OutputState_Enable;  
 	TIM_OCInitStruct.TIM_Pulse = 1000; //pulse is the CCR register in OC mode
-	TIM_OCInitStruct.TIM_OCPolarity = TIM_OCPolarity_High; 
+	TIM_OCInitStruct.TIM_OCPolarity = TIM_OCPolarity_Low; 
 	//TIM_OCInitStruct.TIM_OCPolarity = TIM_OCPolarity_Low;
   //TIM_OCInitStruct.TIM_OCIdleState = TIM_OCIdleState_Set;
 	
@@ -149,8 +148,8 @@ static void TIM1_Config(void){
 
 
 	
-	TIM_ITConfig(TIM1, TIM_IT_CC1, ENABLE); 
-	EnableTimerInterrupt(TIM1_CC_IRQn, 0);
+	TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE); 
+	EnableTimerInterrupt(TIM1_UP_TIM10_IRQn, 0);
 }
 
 //Hall effect interface uses pins A1 A2 A3, Enable output uses C0 C1 C4
