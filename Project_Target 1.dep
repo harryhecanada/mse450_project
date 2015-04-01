@@ -228,7 +228,7 @@ I (E:\mse450_project\Lib\StdPeriph\misc.h)(0x54DDCDD1)
 I (C:\Keil\ARM\ARMCC\include\string.h)(0x51C89844)
 I (C:\Keil\ARM\ARMCC\include\math.h)(0x51C89844)
 F (.\CMSIS\startup_stm32f40xx.s)(0x54DDE7A4)(--cpu Cortex-M4.fp -g --apcs=interwork --pd "__MICROLIB SETA 1"-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\ST\STM32F4xx--list .\startup_stm32f40xx.lst --xref -o .\startup_stm32f40xx.o --depend .\startup_stm32f40xx.d)
-F (.\User\main.c)(0x5519D25F)(-c --cpu Cortex-M4.fp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I.\CMSIS -I.\Lib\StdPeriph -I.\Lib\USB\STM32_USB_Device_Library\Core\inc -I.\Lib\USB\STM32_USB_Device_Library\Class\hid\inc -I.\Lib\USB\STM32_USB_OTG_Driver\inc -I.\MPU6050 -I.\User-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\ST\STM32F4xx-DUSE_STDPERIPH_DRIVER -DSTM32F4XX -DMANGUSTA_DISCOVERY -DUSE_USB_OTG_FS -DHSE_VALUE="8000000" -DSTM32F40XX-o .\main.o --omf_browse .\main.crf --depend .\main.d)
+F (.\User\main.c)(0x551B4BE2)(-c --cpu Cortex-M4.fp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I.\CMSIS -I.\Lib\StdPeriph -I.\Lib\USB\STM32_USB_Device_Library\Core\inc -I.\Lib\USB\STM32_USB_Device_Library\Class\hid\inc -I.\Lib\USB\STM32_USB_OTG_Driver\inc -I.\MPU6050 -I.\User-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\ST\STM32F4xx-DUSE_STDPERIPH_DRIVER -DSTM32F4XX -DMANGUSTA_DISCOVERY -DUSE_USB_OTG_FS -DHSE_VALUE="8000000" -DSTM32F40XX-o .\main.o --omf_browse .\main.crf --depend .\main.d)
 I (E:\mse450_project\User\main.h)(0x550C6549)
 I (E:\mse450_project\CMSIS\stm32f4xx.h)(0x5511B1FB)
 I (E:\mse450_project\CMSIS\core_cm4.h)(0x550C6272)
@@ -302,7 +302,7 @@ I (E:\mse450_project\Lib\StdPeriph\stm32f4xx_usart.h)(0x54DDCDD2)
 I (E:\mse450_project\Lib\StdPeriph\stm32f4xx_wwdg.h)(0x54DDCDD2)
 I (E:\mse450_project\Lib\StdPeriph\misc.h)(0x54DDCDD1)
 I (C:\Keil\ARM\ARMCC\include\stdio.h)(0x51C89844)
-F (.\User\stm32f4xx_it.c)(0x5519D37D)(-c --cpu Cortex-M4.fp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I.\CMSIS -I.\Lib\StdPeriph -I.\Lib\USB\STM32_USB_Device_Library\Core\inc -I.\Lib\USB\STM32_USB_Device_Library\Class\hid\inc -I.\Lib\USB\STM32_USB_OTG_Driver\inc -I.\MPU6050 -I.\User-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\ST\STM32F4xx-DUSE_STDPERIPH_DRIVER -DSTM32F4XX -DMANGUSTA_DISCOVERY -DUSE_USB_OTG_FS -DHSE_VALUE="8000000" -DSTM32F40XX-o .\stm32f4xx_it.o --omf_browse .\stm32f4xx_it.crf --depend .\stm32f4xx_it.d)
+F (.\User\stm32f4xx_it.c)(0x551B5D8F)(-c --cpu Cortex-M4.fp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I.\CMSIS -I.\Lib\StdPeriph -I.\Lib\USB\STM32_USB_Device_Library\Core\inc -I.\Lib\USB\STM32_USB_Device_Library\Class\hid\inc -I.\Lib\USB\STM32_USB_OTG_Driver\inc -I.\MPU6050 -I.\User-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\ST\STM32F4xx-DUSE_STDPERIPH_DRIVER -DSTM32F4XX -DMANGUSTA_DISCOVERY -DUSE_USB_OTG_FS -DHSE_VALUE="8000000" -DSTM32F40XX-o .\stm32f4xx_it.o --omf_browse .\stm32f4xx_it.crf --depend .\stm32f4xx_it.d)
 I (E:\mse450_project\User\stm32f4xx_it.h)(0x550B6487)
 I (E:\mse450_project\User\usb_conf.h)(0x5501E8DE)
 I (E:\mse450_project\CMSIS\stm32f4xx.h)(0x5511B1FB)
