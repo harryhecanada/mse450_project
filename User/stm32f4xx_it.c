@@ -213,7 +213,7 @@ void TIM1_UP_TIM10_IRQHandler(void){
 		//(int)MAIN_CLOCK_PERIOD_MULT/110.5 rounds up to 2. 
 		const int DUTY_MULT=5;
 		unsigned short int vel=5;//PID output goes HERE!
-		static int negcnt=0;//Make value global, change the value to 1k in process data when a change in direction happens
+		static int negcnt;//Make value global, change the value to 1k in process data when a change in direction happens
 		uint8_t dir=0;
 		uint16_t temp;
 		if (Rotation_Data[2]>0 && dir>0)
