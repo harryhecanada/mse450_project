@@ -195,7 +195,9 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
 	Process_Data();
-	printf("Gyro Z = %f \n", Rotation_Data[2]);
+	printf("P1 = %d ", P1Index);
+	printf("P2 = %d ", P2Index);
+	printf("P3 = %d \n", P3Index);
 	//printf("Gyro Z = %f \n", MPU6050_Data_FIFO[5][2]);
 }
 
@@ -215,27 +217,29 @@ void TIM1_UP_TIM10_IRQHandler(void){
 		unsigned short int vel=5;//PID output goes HERE!
 		static int negcnt=0;//Make value global, change the value to 1k in process data when a change in direction happens
 		static int dir=0;
-		uint16_t temp;
+		static int temp;
 		if (Rotation_Data[2]>0 && dir>0)
 		{
-			printf("0");
 			dir=0;
 			negcnt=1000;
+			temp=P3Index;
+			P3Index=P2Index;
+			P2Index=temp;
 		}
-		else if(Rotation_Data[2]<0)
+		else if(Rotation_Data[2]<0 && dir<1)
 		{
-			if(dir<1)
-			{
-				printf("1");
-				dir=100;
-				negcnt=1000;
-			}
+			dir=1;
+			negcnt=1000;
+			temp=P3Index;
+			P3Index=P2Index;
+			P2Index=temp;
 		}
-		P1Index+=vel;
-		P2Index+=vel;
-		P3Index+=vel; 
 		if(negcnt<1)
 		{
+			P1Index+=vel;
+			P2Index+=vel;
+			P3Index+=vel; 
+			/*
 			if(dir)
 			{
 				temp=P1Index;		
@@ -248,8 +252,9 @@ void TIM1_UP_TIM10_IRQHandler(void){
 					temp-=2000;
 				}
 			}
-			TIM_SetCompare1(TIM1,vel*DUTY_MULT*PWMdata[temp]);
-			if(dir)
+			*/
+			TIM_SetCompare1(TIM1,vel*DUTY_MULT*PWMdata[P1Index]);
+			/*if(dir)
 			{
 				temp=P2Index;		
 			}
@@ -260,9 +265,9 @@ void TIM1_UP_TIM10_IRQHandler(void){
 				{
 					temp-=2000;
 				}
-			}
-			TIM_SetCompare2(TIM1,vel*DUTY_MULT*PWMdata[temp]);
-			if(dir)
+			}*/
+			TIM_SetCompare2(TIM1,vel*DUTY_MULT*PWMdata[P2Index]);
+			/*if(dir)
 			{
 				temp=P3Index;		
 			}
@@ -273,8 +278,8 @@ void TIM1_UP_TIM10_IRQHandler(void){
 				{
 					temp-=2000;
 				}
-			}
-			TIM_SetCompare3(TIM1,vel*DUTY_MULT*PWMdata[temp]);
+			}*/
+			TIM_SetCompare3(TIM1,vel*DUTY_MULT*PWMdata[P3Index]);
 			
 			if(P1Index>2000)
 			{
