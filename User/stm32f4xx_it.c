@@ -1,46 +1,14 @@
-/**
-  ******************************************************************************
-  * @file    stm32f4xx_it.c
-  * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    19-September-2011
-  * @brief   Main Interrupt Service Routines.
-  *          This file provides all exceptions handler and peripherals interrupt
-  *          service routine.
-  ******************************************************************************
-  * @attention
-  *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-  *
-  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
-  ******************************************************************************
-  */ 
-
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
 #include "main.h"
 #include "stm32f4xx.h"
 
-/* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define CURSOR_STEP     3
-#define USIGNED_INT_MAX 65535
-#define SIGNED_INT_MAX 32767
-#define PHASE_OFFSET_120 667
-#define PHASE_OFFSET_240 1333
-//MAIN_CLOCK_PERIOD_COUNT/100
-#define MAIN_CLOCK_PERIOD_MULT 210
+#define DUTY_MULT 3
 
-
+//Converts Hall signal to correct Enable pin combinations on the L6234 driver for commutation
 const unsigned short int Hall2En[8][3]={{0,0,0},{0,1,1},{1,1,0},{1,0,1},{1,0,1},{1,1,0},{0,1,1},{0,0,0}};
-
-	
-//NOTE: PWM data only covers 0-180 degrees, the other 180 degrees is assumed to be 0 as output.
+//PWMdata, approximates Sin function from 0 to 180 degrees (0 to 1000) and also provides 0 from 1000 to 2000 to reduce current drain
 const unsigned char PWMdata[2000]={0,1,1,1,2,2,2,3,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,8,9,9,9,10,10,10,11,11,11,12,12,12,13,
 	13,13,13,14,14,14,15,15,15,16,16,16,17,17,17,18,18,18,18,19,19,19,20,20,20,21,21,21,22,22,22,22,23,23,23,24,24,24,25,25,25,
 	25,26,26,26,27,27,27,28,28,28,29,29,29,29,30,30,30,31,31,31,31,32,32,32,33,33,33,34,34,34,34,35,35,35,36,36,36,37,37,37,37,
@@ -82,19 +50,16 @@ const unsigned char PWMdata[2000]={0,1,1,1,2,2,2,3,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
 
-
-
-//phase index for the three phases used to get correct PWM data, if index is >1000 then return 0, if index is >2000 index=0
-//every MPU6050 read cycle gives us a new value for theta, at the same time we should read the value of the encoder to get an value for error,
-//using the value for error we can get angular velocity/frequency then using that we can get the sin value output->P1Index++; PWMdata[f*P1Index], this is checked every main pwm out cycle;
+//Initial offsets for each phase's index
 unsigned short int P1Index=0,P2Index=667,P3Index=1333;
 
+//Obtain require data structures from main
 extern float MPU6050_Data_FIFO[6][3];
 extern float Velocity_Data_FIFO [3][3];
 extern float Rotation_Data[3];
-
 extern PID_TypeDef PIDin;
 
+//Values used to to calculate feedback velocity and output velocity
 float Encoder0=0;
 float Encoder1=0;
 int vel=0;
@@ -198,15 +163,16 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
+	//Process MPU6050 Data
 	Process_Data();
+	
+	//Debug printfs
 	//printf("Encoder = %d\n", TIM_GetCounter(TIM4));
 	//printf("P1 = %d ", P1Index);
 	//printf("P2 = %d ", P2Index);
 	//printf("P3 = %d \n", P3Index);
 	//printf("Gyro Z = %f \n", Rotation_Data[2]);
-
 }
-
 /******************************************************************************/
 /*                 STM32Fxxx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
@@ -216,32 +182,46 @@ void SysTick_Handler(void)
 //IRQ handler for each PWM pulse
 void TIM1_UP_TIM10_IRQHandler(void){
 	if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET){
-		//Note: TIM_SetCompare1(TIM1,vel*DUTY_MULT*PWMdata[P1Index]);, constant is theoretically the correct factor to convert between velocity to rms voltage...(210/110.5) where 110.5 is max nominal angular velocity of motor
-		//if this value does not work first try setting DUTY_MULT to 105 then setting it to 210. DO NOT GO BEYOND 210!
-		//(int)MAIN_CLOCK_PERIOD_MULT/110.5 rounds up to 2. 
-		const int DUTY_MULT=3;
-		//PID output goes HERE!
-		static int deadtime=0;//Make value global, change the value to 1k in process data when a change in direction happens
+		
+		static int deadtime=0;
 		static int dir=0;
-		float temp2;
-		int temp;
-		temp2=(float)TIM_GetCounter(TIM4)*0.00314159265f-Encoder0;
-		if(temp2<5 && temp2>-5)
+		static int oEnc=0;
+		int temp=0;
+		
+		//Prevent the situation where the encoder jumps from 2000 to 0 or 0 to 2000.
+		temp=TIM_GetCounter(TIM4);
+		if((oEnc-temp)>1500 || (oEnc+temp)>1500)
+		{
+			oEnc=temp;
+			temp=1;
+			
+		}
+		else
+		{
+			oEnc=temp;
+			temp=0;
+		}
+		//only update velocity if output of encoder is "normal"
+		//Converts encoder readings to angular velocity in rad/s
+		if(temp)
 		{
 			Encoder1=Encoder0;
-			Encoder0=(float)TIM_GetCounter(TIM4)*0.00314159265f;
-			vel=(int)CalcPID_Out(PIDin,40-(Encoder0-Encoder1)/0.001f);
-			printf("%f \n",(Encoder0-Encoder1)/0.001f);
+			Encoder0=(float)oEnc*0.00314159265f;
 		}
 		else
 		{
 			Encoder1=Encoder0;
-			Encoder0=(float)TIM_GetCounter(TIM4)*0.00314159265f;
+			Encoder0=(float)oEnc*0.00314159265f;
+			
+			//call PID update to update output, currently set to constant angular velocity of 40 rad/s
+			vel=(int)CalcPID_Out(PIDin,40-(Encoder0-Encoder1)/0.001f);
+			//vel=(int)CalcPID_Out(PIDin,Rotation_Data[2]-(Encoder0-Encoder1)/0.001f);
+			
+			//conversion from phase velocity to angular velocity
+			vel=vel/DUTY_MULT/4*3;
 		}
-		//vel=40;
-		vel=vel/DUTY_MULT/4*3;
 		
-		
+		//Convert velocity + direction into deadtime, commutation direction, and speed.
 		if(vel<0)
 		{
 			temp=-1;
@@ -267,18 +247,21 @@ void TIM1_UP_TIM10_IRQHandler(void){
 			P3Index=P2Index;
 			P2Index=temp;
 		}
+		
+		//Normal Operation
 		if(deadtime<1)
 		{
+			//Increment phase velocity counters
 			P1Index+=vel;
 			P2Index+=vel;
 			P3Index+=vel; 
 
+			//set CCR values
 			TIM_SetCompare1(TIM1,vel*DUTY_MULT*PWMdata[P1Index]);
-
 			TIM_SetCompare2(TIM1,vel*DUTY_MULT*PWMdata[P2Index]);
-
 			TIM_SetCompare3(TIM1,vel*DUTY_MULT*PWMdata[P3Index]);
 			
+			//Roll back phase index values if they exceed PWMdata's range
 			if(P1Index>2000)
 			{
 				P1Index-=2000;
@@ -294,6 +277,7 @@ void TIM1_UP_TIM10_IRQHandler(void){
 		}
 		else
 		{
+			//Dead time wait, so we dont go over current.
 			deadtime--;
 			TIM_SetCompare1(TIM1,0);
 			TIM_SetCompare2(TIM1,0);
@@ -309,22 +293,13 @@ void TIM1_UP_TIM10_IRQHandler(void){
 void TIM2_IRQHandler(void){
 	uint8_t temp;
 	if (TIM_GetITStatus(TIM2, TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4) != RESET){
-		/*
-		Once a new hall state is defined we check if it is the same as the old state (to remove errors), 
-		if its a new state then we update by reading all 3 IC channels to get a 3 bit value (use tim function),
-		from the 3 bit value and direction of travel we can set the polarity for each channel using an array that stores the correct configuration
 		
-		The correct configuration can be found by using an oscilioscope that is attached to each phase to 
-		read the corresponding backemf output and hall sensor feedback after manually turning the motor
-		*/
-		//__disable_irq();
+		//Convert the reading into int
 		temp=4*GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_1);
 		temp+=2*GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_2);
 		temp+=GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_3);
-		if(temp>9)
-		{
-			temp=0;
-		}
+		
+		//Process based on the commutation sequence
 		if(Hall2En[temp][0])
 		{
 			GPIO_SetBits(GPIOC, GPIO_Pin_0);
@@ -351,10 +326,7 @@ void TIM2_IRQHandler(void){
 		{
 			GPIO_ResetBits(GPIOC, GPIO_Pin_4);
 		}
-		
 		TIM_ClearITPendingBit(TIM2, TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4);
-		//printf("%d \n",temp);
-		//__enable_irq();
 	}
 	else{
 		TIM_ClearITPendingBit(TIM2, TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4);
@@ -365,30 +337,3 @@ void TIM2_IRQHandler(void){
 
 
 
-//use one interrupt to handle both starting code and encoder reset signal.
-void EXTI0_IRQHandler(void){
-
-}
-
-/**
-  * @brief  This function handles EXTI15_10_IRQ Handler.
-  * @param  None
-  * @retval None
-  */
-void OTG_FS_WKUP_IRQHandler(void)
-{
- 
-}
-
-/**
-  * @brief  This function handles OTG_HS Handler.
-  * @param  None
-  * @retval None
-  */
-void OTG_FS_IRQHandler(void)
-{
-
-}
-
-
-/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

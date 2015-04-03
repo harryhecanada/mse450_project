@@ -8,7 +8,6 @@ HOW TO USE:
 
 //Includes
 #include "stm32f4_MPU6050.h"
-#include <stdio.h>
 
 GPIO_InitTypeDef GPIO_I2C_InitStruct;
 
@@ -86,53 +85,32 @@ MPU6050_ERID MPU6050_Init(I2C_TypeDef *I2Cx, MPU6050_Addr Addr, MPU6050_Accel_Co
 		return MPU6050_NOT_CONNECTED;
 	}
 	MPU6050_Stop(I2Cx);
-	printf("Device is Connected, Reading Address... \n");
 	//Check WHO AM I register
 	if (MPU6050_Read(I2Cx, Addr, MPU6050_WHO_AM_I,NACK) != MPU6050_I_AM) {
 		//Return error 
 		return MPU6050_WRONG_DEVICE;
 	}
-	printf("Address is correct, Configuring Device... \n");
 	//Configurations:
 	//Setup power management on MPU6050, set SLEEP and CYCLE to OFF, set CLK to reference X Gyro, turn OFF temperature sensor. (0x01
-	
 	if(MPU6050_Write(I2Cx, Addr, MPU6050_PWR_MGMT_1, 0x01)){
 		return MPU6050_UNKNOWN_ERROR;
 	}
-	
+	//Config accelerometer, for good measuresments on human hand use +-4G
 	temp = MPU6050_Read(I2Cx, Addr, MPU6050_ACCEL_CONFIG, NACK);
 	temp = (temp & 0xE7) | (uint8_t)AccelSensitivity << 3;
-	MPU6050_Write(I2Cx, Addr, MPU6050_ACCEL_CONFIG, temp);
-	
+	if(MPU6050_Write(I2Cx, Addr, MPU6050_ACCEL_CONFIG, temp)){
+		return MPU6050_UNKNOWN_ERROR;
+	}
+	//Config gyroscope, for good measuresments on human hand use +-250Deg/s
 	temp = MPU6050_Read(I2Cx, Addr, MPU6050_GYRO_CONFIG, NACK);
 	temp = (temp & 0xE7) | (uint8_t)GyroSensitivity << 3;
-	MPU6050_Write(I2Cx, Addr, MPU6050_GYRO_CONFIG, temp);
-	
+	if(MPU6050_Write(I2Cx, Addr, MPU6050_GYRO_CONFIG, temp)){
+		return MPU6050_UNKNOWN_ERROR;
+	}
+	//Set the low pass filter to 10Hz
 	if(MPU6050_Write(I2Cx,	Addr,	MPU6050_CONFIG, MPU6050_DLFP_10Hz)){
 		return MPU6050_UNKNOWN_ERROR;
 	}
-	//Enable FIFO Buffer
-	if(MPU6050_Write(I2Cx, Addr, MPU6050_USER_CTRL, MPU6050_FIFO_BUFFER_EN)){
-		return MPU6050_UNKNOWN_ERROR;
-	}
-	//Enable the writing of XYZ Gyro data and XYZ Accel data into the FIFO buffer
-	//if(MPU6050_Write(I2Cx,	Addr,	MPU6050_FIFO_EN, (MPU6050_FIFO_XGYRO_EN|MPU6050_FIFO_YGYRO_EN|MPU6050_FIFO_ZGYRO_EN|MPU6050_FIFO_ACCEL_EN))){
-	//	return MPU6050_UNKNOWN_ERROR;
-	//}
-	//Enable FIFO Interrupt, and Data Ready Interrupt
-	//if(MPU6050_Write(I2Cx,	Addr,	MPU6050_INT_ENABLE, (MPU6050_DATA_RDY_INT|MPU6050_FIFO_OFLOW_INT))){
-	//	return MPU6050_UNKNOWN_ERROR;
-	//}
-	//Set the low pass filter to 10Hz
-
-	//Config accelerometer, for good measuresments on human hand use +-4G
-	//if(MPU6050_Write(I2Cx, Addr, MPU6050_ACCEL_CONFIG, AccelSensitivity)){
-	//	return MPU6050_UNKNOWN_ERROR;
-	//}
-	//Config gyroscope, for good measuresments on human hand use +-250Deg/s
-	//if(MPU6050_Write(I2Cx, Addr, MPU6050_GYRO_CONFIG, GyroSensitivity)){
-	//	return MPU6050_UNKNOWN_ERROR;
-	//}
 	//Return OK 
 	return MPU6050_OK;
 }
@@ -170,18 +148,22 @@ MPU6050_ERID MPU6050_ReadGyro(I2C_TypeDef *I2Cx, MPU6050_Data *DataStruct, MPU60
 MPU6050_ERID MPU6050_ReadAll(I2C_TypeDef *I2Cx, MPU6050_Data *DataStruct, MPU6050_Addr Addr) {
 	uint8_t data[14];
 	
-	//Read 14 bytes, the temperature is disabled, so we ignore it.
+	//Modified Real all to save on processing cycles.
 	MPU6050_MultiRead(I2Cx, Addr, MPU6050_GYRO_ZOUT_H, data, 2);
+	DataStruct->Gyro_Z = (int16_t)(data[0] << 8 | data[1]);
 	/*
+	//Read 14 bytes, the temperature is disabled, so we ignore it.
+	MPU6050_MultiRead(I2Cx, Addr, MPU6050_ACCEL_XOUT_H, data, 14);
+	
 	DataStruct->Accel_X = (int16_t)(data[0] << 8 | data[1]);	
 	DataStruct->Accel_Y = (int16_t)(data[2] << 8 | data[3]);
 	DataStruct->Accel_Z = (int16_t)(data[4] << 8 | data[5]);
 	
 	DataStruct->Gyro_X = (int16_t)(data[8] << 8 | data[9]);
 	DataStruct->Gyro_Y = (int16_t)(data[10] << 8 | data[11]);
+	DataStruct->Gyro_Z = (int16_t)(data[12] << 8 | data[13]);
 	*/
-	//DataStruct->Gyro_Z = (int16_t)(data[12] << 8 | data[13]);
-	DataStruct->Gyro_Z = (int16_t)(data[0] << 8 | data[1]);
+	
 	//Return OK 
 	return MPU6050_OK;
 }
@@ -189,7 +171,7 @@ MPU6050_ERID MPU6050_FIFO_Read(I2C_TypeDef *I2Cx, MPU6050_Data *DataStruct, MPU6
 	uint8_t data[12];
 	
 	//Read 12 bytes since temperature is disabled
-	MPU6050_MultiRead(I2Cx, Addr, MPU6050_FIFO_R_W, data, 14);
+	MPU6050_MultiRead(I2Cx, Addr, MPU6050_FIFO_R_W, data, 12);
 	
 	DataStruct->Accel_X = (int16_t)(data[0] << 8 | data[1]);	
 	DataStruct->Accel_Y = (int16_t)(data[2] << 8 | data[3]);
@@ -204,9 +186,12 @@ MPU6050_ERID MPU6050_FIFO_Read(I2C_TypeDef *I2Cx, MPU6050_Data *DataStruct, MPU6
 }
 uint8_t MPU6050_Start(I2C_TypeDef *I2Cx, uint8_t addr, uint8_t dir, uint8_t ack) {
 	int16_t temp=I2C_Timeout;
+	//Wait until I2C channel is not busy anymore
 	while(I2C_GetFlagStatus(I2Cx, I2C_FLAG_BUSY));
 	//Attempt Initial Communication 
 	I2C_GenerateSTART(I2Cx, ENABLE);
+	
+	//Wait until master condition is set
 	while (!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_MODE_SELECT) && temp) {
 		temp--;
 		if (temp == 0x00) {

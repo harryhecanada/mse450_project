@@ -6,21 +6,22 @@ PID Controller
 #include "PID.h"
 #include <stdio.h>
 
-
-
 float CalcPID_Out(PID_TypeDef PIDin, float err){
-	float result;
+	float result=0;
 	int temp=0;
+	//PID calculations, note that compiler only can handle one floating point multiplication or divison per line.
 	result += PIDin.OutputBuffer[1];
 	result += PIDin.c[0]*PIDin.InputBuffer[0];
 	result += PIDin.c[1]*PIDin.InputBuffer[1];
 	result += PIDin.c[2]*PIDin.InputBuffer[2];
 	
+	//Shift buffers
 	PIDin.OutputBuffer[1]=PIDin.OutputBuffer[0];
 	PIDin.OutputBuffer[0]=result;
 	PIDin.InputBuffer[2]=PIDin.InputBuffer[1];
 	PIDin.InputBuffer[1]=PIDin.InputBuffer[0];
 	PIDin.InputBuffer[0]=err;
+	
 	//Saturation
 	if(result<0)
 	{
@@ -35,17 +36,15 @@ float CalcPID_Out(PID_TypeDef PIDin, float err){
 	}else if(temp*PIDin.OutputBuffer[0] >= PIDin.upplim){
 		PIDin.OutputBuffer[0] = temp*PIDin.upplim;
 	}
-	return PIDin.OutputBuffer[0];
 	
+	return PIDin.OutputBuffer[0];
 }
 
 void PID_Init(PID_TypeDef PIDin){
-	
-
+	//Calculate discrete time domain controller constants
 	PIDin.c[0] = PIDin.KP + PIDin.KD + PIDin.KI;
 	PIDin.c[1] = -1*(PIDin.KP + 2*PIDin.KD);
 	PIDin.c[2] = PIDin.KD;
-	
 }
 
 

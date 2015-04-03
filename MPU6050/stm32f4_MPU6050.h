@@ -1,3 +1,6 @@
+#ifndef __MPU6050_H
+#define __MPU6050_H
+
 //Includes
 #include "stm32f4xx.h"
 #include "stm32f4xx_rcc.h"
@@ -87,33 +90,33 @@
 #define MPU6050_FIFO_OFLOW_INT 0x10
 
 
-
+//Address Types
 typedef enum {
 	MPU6050_Device_0 = 0xD0,
 	MPU6050_Device_1 = 0xD2
 } MPU6050_Addr;
-
+//Error Types
 typedef enum {
 	MPU6050_OK = 0x00,
 	MPU6050_NOT_CONNECTED = 0x01,
 	MPU6050_WRONG_DEVICE = 0x02,
 	MPU6050_UNKNOWN_ERROR = 0x03
 } MPU6050_ERID;
-
+//Accel Config Types
 typedef enum {
 	MPU6050_Accel_2G = 0x00,
 	MPU6050_Accel_4G = 0x08,
 	MPU6050_Accel_8G = 0x10,
 	MPU6050_Accel_16G = 0x18
 } MPU6050_Accel_Config;
-
+//Gyro Config Types
 typedef enum {
 	MPU6050_Gyro_250ds = 0x00,
 	MPU6050_Gyro_500ds = 0x08,
 	MPU6050_Gyro_1000ds = 0x10,
 	MPU6050_Gyro_2000ds = 0x18
 } MPU6050_Gyro_Config;
-
+//MPU6050 Data structure
 typedef struct {
 	int16_t Accel_X;
 	int16_t Accel_Y;
@@ -123,6 +126,7 @@ typedef struct {
 	int16_t Gyro_Z;
 } MPU6050_Data;
 
+//Public Functions
 MPU6050_ERID MPU6050_Init(I2C_TypeDef* I2Cx, MPU6050_Addr DeviceAddr, MPU6050_Accel_Config AccelSensitivity, MPU6050_Gyro_Config GyroSensitivity);
 
 MPU6050_ERID MPU6050_ReadAccel(I2C_TypeDef* I2Cx, MPU6050_Data* DataStruct, MPU6050_Addr Addr);
@@ -143,4 +147,4 @@ uint8_t MPU6050_Write(I2C_TypeDef* I2Cx, uint8_t addr, uint8_t reg_id, uint8_t d
 
 uint8_t MPU6050_MultiRead(I2C_TypeDef* I2Cx, uint8_t addr, uint8_t reg_id, uint8_t* data, uint16_t count);
 
-
+#endif

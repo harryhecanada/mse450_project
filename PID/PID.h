@@ -1,5 +1,7 @@
+#ifndef __PID_H
+#define __PID_H
 //Includes
-#define ABS(x)         (x < 0) ? (-x) : x
+
 //Relevant Structures
 typedef struct {
 	float KP;
@@ -17,3 +19,4 @@ typedef struct {
 //Function Prototypes
 float CalcPID_Out(PID_TypeDef PIDin, float err);
 void PID_Init(PID_TypeDef PIDin);
+#endif
