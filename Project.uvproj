@@ -351,7 +351,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F4XX MANGUSTA_DISCOVERY USE_USB_OTG_FS HSE_VALUE=8000000</Define>
               <Undefine></Undefine>
-              <IncludePath>.\CMSIS;.\Lib\StdPeriph;.\Lib\USB\STM32_USB_Device_Library\Core\inc;.\Lib\USB\STM32_USB_Device_Library\Class\hid\inc;.\Lib\USB\STM32_USB_OTG_Driver\inc;.\MPU6050;.\User</IncludePath>
+              <IncludePath>.\CMSIS;.\Lib\StdPeriph;.\Lib\USB\STM32_USB_Device_Library\Core\inc;.\Lib\USB\STM32_USB_Device_Library\Class\hid\inc;.\Lib\USB\STM32_USB_OTG_Driver\inc;.\MPU6050;.\User;.\PID</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -492,6 +492,46 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\main.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>2</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                </CommonProperty>
+                <FileArmAds>
+                  <Cads>
+                    <interw>2</interw>
+                    <Optim>0</Optim>
+                    <oTime>2</oTime>
+                    <SplitLS>2</SplitLS>
+                    <OneElfS>2</OneElfS>
+                    <Strict>2</Strict>
+                    <EnumInt>2</EnumInt>
+                    <PlainCh>2</PlainCh>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <wLevel>0</wLevel>
+                    <uThumb>2</uThumb>
+                    <uSurpInc>2</uSurpInc>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath>.\MPU6050;.\PID;.\CMSIS;.\Lib\StdPeriph</IncludePath>
+                    </VariousControls>
+                  </Cads>
+                </FileArmAds>
+              </FileOption>
             </File>
             <File>
               <FileName>printf.c</FileName>
@@ -641,7 +681,14 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>PID Controller</GroupName>
+          <GroupName>PID</GroupName>
+          <Files>
+            <File>
+              <FileName>PID.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\PID\PID.c</FilePath>
+            </File>
+          </Files>
         </Group>
       </Groups>
     </Target>

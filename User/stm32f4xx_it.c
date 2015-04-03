@@ -38,6 +38,7 @@
 
 
 const unsigned short int Hall2En[8][3]={{0,0,0},{0,1,1},{1,1,0},{1,0,1},{1,0,1},{1,1,0},{0,1,1},{0,0,0}};
+
 	
 //NOTE: PWM data only covers 0-180 degrees, the other 180 degrees is assumed to be 0 as output.
 const unsigned char PWMdata[2000]={0,1,1,1,2,2,2,3,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,8,9,9,9,10,10,10,11,11,11,12,12,12,13,
@@ -88,12 +89,15 @@ const unsigned char PWMdata[2000]={0,1,1,1,2,2,2,3,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7
 //using the value for error we can get angular velocity/frequency then using that we can get the sin value output->P1Index++; PWMdata[f*P1Index], this is checked every main pwm out cycle;
 unsigned short int P1Index=0,P2Index=667,P3Index=1333;
 
-extern uint8_t BeginFlag;
-extern uint8_t UserButtonPressed;
 extern float MPU6050_Data_FIFO[6][3];
 extern float Velocity_Data_FIFO [3][3];
 extern float Rotation_Data[3];
 
+extern PID_TypeDef PIDin;
+
+float Encoder0=0;
+float Encoder1=0;
+int vel=0;
 
 /******************************************************************************/
 /*            Cortex-M3 Processor Exceptions Handlers                         */
@@ -195,10 +199,12 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
 	Process_Data();
-	printf("P1 = %d ", P1Index);
-	printf("P2 = %d ", P2Index);
-	printf("P3 = %d \n", P3Index);
-	//printf("Gyro Z = %f \n", MPU6050_Data_FIFO[5][2]);
+	//printf("Encoder = %d\n", TIM_GetCounter(TIM4));
+	//printf("P1 = %d ", P1Index);
+	//printf("P2 = %d ", P2Index);
+	//printf("P3 = %d \n", P3Index);
+	//printf("Gyro Z = %f \n", Rotation_Data[2]);
+
 }
 
 /******************************************************************************/
@@ -213,72 +219,64 @@ void TIM1_UP_TIM10_IRQHandler(void){
 		//Note: TIM_SetCompare1(TIM1,vel*DUTY_MULT*PWMdata[P1Index]);, constant is theoretically the correct factor to convert between velocity to rms voltage...(210/110.5) where 110.5 is max nominal angular velocity of motor
 		//if this value does not work first try setting DUTY_MULT to 105 then setting it to 210. DO NOT GO BEYOND 210!
 		//(int)MAIN_CLOCK_PERIOD_MULT/110.5 rounds up to 2. 
-		const int DUTY_MULT=5;
-		unsigned short int vel=5;//PID output goes HERE!
-		static int negcnt=0;//Make value global, change the value to 1k in process data when a change in direction happens
+		const int DUTY_MULT=3;
+		//PID output goes HERE!
+		static int deadtime=0;//Make value global, change the value to 1k in process data when a change in direction happens
 		static int dir=0;
-		static int temp;
-		if (Rotation_Data[2]>0 && dir>0)
+		float temp2;
+		int temp;
+		temp2=(float)TIM_GetCounter(TIM4)*0.00314159265f-Encoder0;
+		if(temp2<5 && temp2>-5)
+		{
+			Encoder1=Encoder0;
+			Encoder0=(float)TIM_GetCounter(TIM4)*0.00314159265f;
+			vel=(int)CalcPID_Out(PIDin,40-(Encoder0-Encoder1)/0.001f);
+			printf("%f \n",(Encoder0-Encoder1)/0.001f);
+		}
+		else
+		{
+			Encoder1=Encoder0;
+			Encoder0=(float)TIM_GetCounter(TIM4)*0.00314159265f;
+		}
+		//vel=40;
+		vel=vel/DUTY_MULT/4*3;
+		
+		
+		if(vel<0)
+		{
+			temp=-1;
+			vel*=-1;
+		}
+		else
+		{
+			temp=1;
+		}
+		if (temp>0 && dir>0)
 		{
 			dir=0;
-			negcnt=1000;
+			deadtime=1000;
 			temp=P3Index;
 			P3Index=P2Index;
 			P2Index=temp;
 		}
-		else if(Rotation_Data[2]<0 && dir<1)
+		else if(temp<0 && dir<1)
 		{
 			dir=1;
-			negcnt=1000;
+			deadtime=1000;
 			temp=P3Index;
 			P3Index=P2Index;
 			P2Index=temp;
 		}
-		if(negcnt<1)
+		if(deadtime<1)
 		{
 			P1Index+=vel;
 			P2Index+=vel;
 			P3Index+=vel; 
-			/*
-			if(dir)
-			{
-				temp=P1Index;		
-			}
-			else
-			{
-				temp=P1Index+1000;
-				if(temp>2000)
-				{
-					temp-=2000;
-				}
-			}
-			*/
+
 			TIM_SetCompare1(TIM1,vel*DUTY_MULT*PWMdata[P1Index]);
-			/*if(dir)
-			{
-				temp=P2Index;		
-			}
-			else
-			{
-				temp=P2Index+1000;
-				if(temp>2000)
-				{
-					temp-=2000;
-				}
-			}*/
+
 			TIM_SetCompare2(TIM1,vel*DUTY_MULT*PWMdata[P2Index]);
-			/*if(dir)
-			{
-				temp=P3Index;		
-			}
-			else
-			{
-				temp=P3Index+1000;
-				if(temp>2000)
-				{
-					temp-=2000;
-				}
-			}*/
+
 			TIM_SetCompare3(TIM1,vel*DUTY_MULT*PWMdata[P3Index]);
 			
 			if(P1Index>2000)
@@ -296,7 +294,7 @@ void TIM1_UP_TIM10_IRQHandler(void){
 		}
 		else
 		{
-			negcnt--;
+			deadtime--;
 			TIM_SetCompare1(TIM1,0);
 			TIM_SetCompare2(TIM1,0);
 			TIM_SetCompare3(TIM1,0);
@@ -365,17 +363,6 @@ void TIM2_IRQHandler(void){
 }
 
 
-
-//IRQ handler for each MPU6050 update (10KHz)
-void TIM7_IRQHandler(void){
-	if (TIM_GetITStatus(TIM7, TIM_IT_Update) != RESET){
-			////Note IT pending bit will be cleared AFTER processing is complete.
-			TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
-    }
-		else{
-			TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
-		}
-}
 
 
 //use one interrupt to handle both starting code and encoder reset signal.

@@ -171,16 +171,17 @@ MPU6050_ERID MPU6050_ReadAll(I2C_TypeDef *I2Cx, MPU6050_Data *DataStruct, MPU605
 	uint8_t data[14];
 	
 	//Read 14 bytes, the temperature is disabled, so we ignore it.
-	MPU6050_MultiRead(I2Cx, Addr, MPU6050_ACCEL_XOUT_H, data, 14);
-	
+	MPU6050_MultiRead(I2Cx, Addr, MPU6050_GYRO_ZOUT_H, data, 2);
+	/*
 	DataStruct->Accel_X = (int16_t)(data[0] << 8 | data[1]);	
 	DataStruct->Accel_Y = (int16_t)(data[2] << 8 | data[3]);
 	DataStruct->Accel_Z = (int16_t)(data[4] << 8 | data[5]);
 	
 	DataStruct->Gyro_X = (int16_t)(data[8] << 8 | data[9]);
 	DataStruct->Gyro_Y = (int16_t)(data[10] << 8 | data[11]);
-	DataStruct->Gyro_Z = (int16_t)(data[12] << 8 | data[13]);
-
+	*/
+	//DataStruct->Gyro_Z = (int16_t)(data[12] << 8 | data[13]);
+	DataStruct->Gyro_Z = (int16_t)(data[0] << 8 | data[1]);
 	//Return OK 
 	return MPU6050_OK;
 }

@@ -34,6 +34,7 @@
 ".\stm32f4xx_usart.o"
 ".\stm32f4xx_wwdg.o"
 ".\stm32f4_mpu6050.o"
+".\pid.o"
 --library_type=microlib --strict --scatter ".\Project.sct"
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

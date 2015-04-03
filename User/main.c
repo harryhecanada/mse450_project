@@ -2,16 +2,21 @@
 #include "main.h"
 
 int16_t MPU6050_Offset[6];
-
 MPU6050_Data MPU6050_Device_0_Data;
+PID_TypeDef PIDin;
+
 
 //defines the number of counts in one clock period, one clock period being 42MHz/MAIN_CLOCK_PERIOD_COUNT = 2KHz
 #define MAIN_CLOCK_PERIOD_COUNT 21000-1
+#define PID_KD  0.0141
+#define PID_KP  0.00591
+#define PID_KI  0.000099302
+#define PID_TS  1/1000;
 
 // Private Functions
+static void PID_Config(void);
 static void TIM1_Config(void);
 static void TIM2_Config(void);
-static void TIM7_Config(void);
 static void Encoder_Config(void);
 static void MPU6050_Config(MPU6050_Addr Device_ID);
 static void EnableTimerInterrupt(uint8_t TIMx_IRQn, uint8_t Priority);
@@ -45,23 +50,32 @@ Main Function
 int main(void){
   printf("Hello World\n");
 	//__disable_irq();
-	 
+	PID_Config();
 	//Gyro & Accel Configuration
 	MPU6050_Config(MPU6050_Device_0);
-	SysTick_Config(SystemCoreClock / 50); 
-	//TIM7_Config();
+	SysTick_Config(SystemCoreClock / 1000); 
 	//Main PWM Configuration
 	TIM1_Config();
 	//Hall Interface
 	TIM2_Config();
 	//Encoder Configuration
-	//Encoder_Config();
+	Encoder_Config();
 	//__enable_irq();
 	while(1)
 	{
 	}
 }
 
+static void PID_Config()
+{
+	PIDin.KD=PID_KD;
+	PIDin.KI=PID_KI;
+	PIDin.KP=PID_KP;
+	PIDin.Ts=PID_TS;
+	PIDin.lowlim=1;
+	PIDin.upplim=200;
+	PID_Init(PIDin);
+}
 static void EnableTimerInterrupt(uint8_t TIMx_IRQn, uint8_t Priority){
 	  NVIC_InitTypeDef nvicStructure;
     nvicStructure.NVIC_IRQChannel = TIMx_IRQn;
@@ -73,11 +87,12 @@ static void EnableTimerInterrupt(uint8_t TIMx_IRQn, uint8_t Priority){
 
 //Configures the MPU6050, uses I2C and pins B8 (SCL) B9 (SDA)
 static void MPU6050_Config(MPU6050_Addr Device_ID){
+
 	if(MPU6050_Init(I2C1, Device_ID,	MPU6050_Accel_4G,	MPU6050_Gyro_250ds)!=MPU6050_OK)
 	{
 		Fail_Handler();
 	}
-	if (MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_INT_STATUS,0)){
+	if (MPU6050_Read(I2C1,Device_ID,MPU6050_INT_STATUS,0)){
 			MPU6050_ReadAll(I2C1,&MPU6050_Device_0_Data,MPU6050_Device_0);
 			MPU6050_Offset[0]=MPU6050_Device_0_Data.Accel_X;
 			MPU6050_Offset[1]=MPU6050_Device_0_Data.Accel_Y;
@@ -216,27 +231,9 @@ static void TIM2_Config(void){
    // enable timer2
   TIM_Cmd(TIM2, ENABLE);
 }
-
-
-//MPU6050 Interrupt config, checks MPU6050 at 10KHz to ensure newest data is obtained.
-static void TIM7_Config(void){
-  TIM_TimeBaseInitTypeDef  TIM_TimeBaseStruct;
-  
-  /* TIM4 clock enable */
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM7, ENABLE);//42MHz CLK, 2x for Timers -> 84MHz
-  
-  /* Time base configuration */
-	TIM_TimeBaseStruct.TIM_Prescaler = 840-1;//Gives us a 100KHz Clock
-  TIM_TimeBaseStruct.TIM_Period = 10000-1;//Gives us one interrupt every 1000 counts, 1KHz
-  TIM_TimeBaseStruct.TIM_ClockDivision = TIM_CKD_DIV1;
-  TIM_TimeBaseStruct.TIM_CounterMode = TIM_CounterMode_Up;
-  TIM_TimeBaseInit(TIM7, &TIM_TimeBaseStruct);
-	TIM_Cmd(TIM7, ENABLE);
-  TIM_ITConfig(TIM7, TIM_IT_Update, ENABLE);
-	EnableTimerInterrupt(TIM7_IRQn, 2);
-}
 //configure the quadrature encoder reading uses B6 B7 TIM4
 static void Encoder_Config(void){
+	int reading=TIM_GetCounter(TIM4);
 	GPIO_InitTypeDef GPIO_InitStruct;
 	
 	RCC_AHB1PeriphClockCmd (RCC_AHB1Periph_GPIOB, ENABLE);
@@ -253,19 +250,31 @@ static void Encoder_Config(void){
 	TIM_EncoderInterfaceConfig (TIM4, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
 	TIM_SetAutoreload (TIM4, 2000);//number of encoder signals in one rotation of motor = 4*500 = 2000;
 	TIM_Cmd(TIM4,ENABLE);
+	//printf("Encoder = %d\n", reading);
 	//to read counter use: int reading=TIM_GetCounter(TIM4);
 }
 //Process data is called by TIM7 IRQ.
 void Process_Data(void){
 	float temp;
-	uint8_t n;
+	static float drift=0;
+//	uint8_t n;
 	__disable_irq();//not sure if its a good idea to disable interrupts
 	if (MPU6050_Read(I2C1,MPU6050_Device_0,MPU6050_INT_STATUS,0)){
-		for(n=0;n<6;n++)
+		MPU6050_ReadAll(I2C1,&MPU6050_Device_0_Data,MPU6050_Device_0);
+		drift=MPU6050_Data_FIFO[5][2]-MPU6050_Data_FIFO[5][1];
+				//Shift FIFO buffer to the left by one unit, the data at [n][0] is removed and a new data will be added later at [n][2]
+				MPU6050_Data_FIFO[5][0]=MPU6050_Data_FIFO[5][1];
+				MPU6050_Data_FIFO[5][1]=MPU6050_Data_FIFO[5][2];
+
+		if(drift>3 || drift<-3)
 		{
-			//Shift FIFO buffer to the left by one unit, the data at [n][0] is removed and a new data will be added later at [n][2]
-			MPU6050_Data_FIFO[n][0]=MPU6050_Data_FIFO[n][1];
-			MPU6050_Data_FIFO[n][1]=MPU6050_Data_FIFO[n][2];
+			MPU6050_Data_FIFO[5][2]=(float)MPU6050_Device_0_Data.Gyro_Z/MPU6050_GYRO_SENS_250;
+			temp=(MPU6050_Data_FIFO[5][0]+4*MPU6050_Data_FIFO[5][1]+MPU6050_Data_FIFO[2][2]);
+			Rotation_Data[2]=Rotation_Data[2]+0.0005f*temp;
+		}
+		else
+		{
+			MPU6050_Data_FIFO[5][2]=(float)MPU6050_Device_0_Data.Gyro_Z/MPU6050_GYRO_SENS_250;
 		}
 		/*for(n=0;n<3;n++)
 		{
@@ -275,7 +284,7 @@ void Process_Data(void){
 		}*/
 		
 		//Read Normally
-		MPU6050_ReadAll(I2C1,&MPU6050_Device_0_Data,MPU6050_Device_0);
+		
 		
 		//EXTREMELY processor intensive takes about 100 CPU cycles... not sure if better method is available...
 		//MPU6050_Data_FIFO[0][2]=(float)MPU6050_Device_0_Data.Accel_X/MPU6050_ACCEL_SENS_4;
@@ -285,11 +294,10 @@ void Process_Data(void){
 		//MPU6050_Data_FIFO[3][2]=(float)MPU6050_Device_0_Data.Gyro_X/MPU6050_GYRO_SENS_250;
 		//MPU6050_Data_FIFO[4][2]=(float)MPU6050_Device_0_Data.Gyro_Y/MPU6050_GYRO_SENS_250;
 		//printf("Gyro Z = %d \n", MPU6050_Device_0_Data.Gyro_Z);
-		if(MPU6050_Device_0_Data.Gyro_Z>100 || MPU6050_Device_0_Data.Gyro_Z<-500)
-		{
-			MPU6050_Data_FIFO[5][2]=(float)MPU6050_Device_0_Data.Gyro_Z/MPU6050_GYRO_SENS_250;
+		
+			
 			//printf("Gyro Z = %f \n", MPU6050_Data_FIFO[5][2]);
-		}
+		
 		/*Velocity Data - 20 Cycles each?
 		temp=(MPU6050_Data_FIFO[0][0]+4*MPU6050_Data_FIFO[0][1]+MPU6050_Data_FIFO[0][2]);
 		Velocity_Data_FIFO[0][2]=Velocity_Data_FIFO[0][2]+0.0005f*temp;
@@ -308,8 +316,7 @@ void Process_Data(void){
 		//temp=(MPU6050_Data_FIFO[4][0]+4*MPU6050_Data_FIFO[4][1]+MPU6050_Data_FIFO[0][2]);
 		//Rotation_Data[1]=Rotation_Data[1]+0.0005f*temp;
 		
-		temp=(MPU6050_Data_FIFO[5][0]+4*MPU6050_Data_FIFO[5][1]+MPU6050_Data_FIFO[2][2]);
-		Rotation_Data[2]=Rotation_Data[2]+0.0005f*temp;
+
 		
 		/*Displacement Data
 		temp=(Velocity_Data_FIFO[0][0]+4*Velocity_Data_FIFO[0][1]+Velocity_Data_FIFO[0][2]);
