@@ -6,3 +6,4 @@
 /* Exported functions ------------------------------------------------------- */
 void Process_Data(void);
 void Fail_Handler(void);
+void Process_Hall(void);

@@ -15,11 +15,14 @@ MPU6050_Data MPU6050_Device_0_Data;
 PID_TypeDef PIDin;
 
 // PID definitions
-#define PID_KD  0.0141
-#define PID_KP  0.00591
-#define PID_KI  0.000099302
-#define PID_TS  1/1000;
+#define PID_KD  0.0000f
+#define PID_KP  0.001f
+#define PID_KI  0.0007f
+#define PID_TS  0.001f
 
+//Converts Hall signal to correct Enable pin combinations on the L6234 driver for commutation
+const unsigned short int Hall2En[8][3]={{0,0,0},{0,1,1},{1,1,0},{1,0,1},{1,0,1},{1,1,0},{0,1,1},{0,0,0}};
+	
 // Private Functions
 static void PID_Config(void);
 static void TIM1_Config(void);
@@ -86,9 +89,9 @@ static void PID_Config()
 	PIDin.KI=PID_KI;
 	PIDin.KP=PID_KP;
 	PIDin.Ts=PID_TS;
-	PIDin.lowlim=1;
-	PIDin.upplim=200;
-	PID_Init(PIDin);
+	PIDin.lowlim=20;
+	PIDin.upplim=160;
+	PID_Init(&PIDin);
 }
 
 //Function used to simplify NVIC calls, All Interrupt Handlers are in stm32f4xx_it.c
@@ -231,6 +234,7 @@ static void TIM2_Config(void){
 	
   // enable timer2
   TIM_Cmd(TIM2, ENABLE); 
+	Process_Hall();
 }
 //configure the quadrature encoder reading uses B6 B7 TIM4
 static void Encoder_Config(void){
@@ -344,6 +348,42 @@ void Process_Data(void){
 	__enable_irq();
 }
 
+
+void Process_Hall(void){
+	//Convert the reading into int
+	uint8_t temp;
+	temp=4*GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_1);
+	temp+=2*GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_2);
+	temp+=GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_3);
+	
+	//Process based on the commutation sequence
+	if(Hall2En[temp][0])
+	{
+		GPIO_SetBits(GPIOC, GPIO_Pin_0);
+	}
+	else
+	{
+		GPIO_ResetBits(GPIOC, GPIO_Pin_0);
+	}
+	
+	if(Hall2En[temp][1])
+	{
+		GPIO_SetBits(GPIOC, GPIO_Pin_1);
+	}
+	else
+	{
+		GPIO_ResetBits(GPIOC, GPIO_Pin_1);
+	}
+	
+	if(Hall2En[temp][2])
+	{
+		GPIO_SetBits(GPIOC, GPIO_Pin_4);
+	}
+	else
+	{
+		GPIO_ResetBits(GPIOC, GPIO_Pin_4);
+	}
+}
 //This function handles program failures.
 void Fail_Handler(void){
 	printf("Critical Failure \n");

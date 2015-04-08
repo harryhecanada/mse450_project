@@ -17,6 +17,6 @@ typedef struct {
 } PID_TypeDef;
 
 //Function Prototypes
-float CalcPID_Out(PID_TypeDef PIDin, float err);
-void PID_Init(PID_TypeDef PIDin);
+float CalcPID_Out(PID_TypeDef* PIDin, float input, float feedback);
+void PID_Init(PID_TypeDef* PIDin);
 #endif

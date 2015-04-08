@@ -6,8 +6,7 @@
 /* Private define ------------------------------------------------------------*/
 #define DUTY_MULT 3
 
-//Converts Hall signal to correct Enable pin combinations on the L6234 driver for commutation
-const unsigned short int Hall2En[8][3]={{0,0,0},{0,1,1},{1,1,0},{1,0,1},{1,0,1},{1,1,0},{0,1,1},{0,0,0}};
+
 //PWMdata, approximates Sin function from 0 to 180 degrees (0 to 1000) and also provides 0 from 1000 to 2000 to reduce current drain
 const unsigned char PWMdata[2000]={0,1,1,1,2,2,2,3,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,8,9,9,9,10,10,10,11,11,11,12,12,12,13,
 	13,13,13,14,14,14,15,15,15,16,16,16,17,17,17,18,18,18,18,19,19,19,20,20,20,21,21,21,22,22,22,22,23,23,23,24,24,24,25,25,25,
@@ -62,7 +61,11 @@ extern PID_TypeDef PIDin;
 //Values used to to calculate feedback velocity and output velocity
 float Encoder0=0;
 float Encoder1=0;
+float mvel=0;
 int vel=0;
+int deadtime=0;
+int dir=0;
+
 
 /******************************************************************************/
 /*            Cortex-M3 Processor Exceptions Handlers                         */
@@ -182,45 +185,23 @@ void SysTick_Handler(void)
 //IRQ handler for each PWM pulse
 void TIM1_UP_TIM10_IRQHandler(void){
 	if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET){
-		
-		static int deadtime=0;
-		static int dir=0;
-		static int oEnc=0;
 		int temp=0;
-		
+		float tempf=0;
 		//Prevent the situation where the encoder jumps from 2000 to 0 or 0 to 2000.
 		temp=TIM_GetCounter(TIM4);
-		if((oEnc-temp)>1500 || (oEnc+temp)>1500)
+		Encoder1=Encoder0;
+		Encoder0=(float)temp*0.00314159265f;
+		tempf=(Encoder0-Encoder1)/0.001f;
+		if(tempf>1000 || tempf<-1000)
 		{
-			oEnc=temp;
-			temp=1;
-			
+			tempf=mvel;
 		}
-		else
-		{
-			oEnc=temp;
-			temp=0;
-		}
-		//only update velocity if output of encoder is "normal"
-		//Converts encoder readings to angular velocity in rad/s
-		if(temp)
-		{
-			Encoder1=Encoder0;
-			Encoder0=(float)oEnc*0.00314159265f;
-		}
-		else
-		{
-			Encoder1=Encoder0;
-			Encoder0=(float)oEnc*0.00314159265f;
-			
-			//call PID update to update output, currently set to constant angular velocity of 40 rad/s
-			vel=(int)CalcPID_Out(PIDin,40-(Encoder0-Encoder1)/0.001f);
-			//vel=(int)CalcPID_Out(PIDin,Rotation_Data[2]-(Encoder0-Encoder1)/0.001f);
-			
-			//conversion from phase velocity to angular velocity
-			vel=vel/DUTY_MULT/4*3;
-		}
-		
+		mvel=tempf;
+		vel=(int)CalcPID_Out(&PIDin,Rotation_Data[2],tempf);
+		printf("%f ",Rotation_Data[2]);
+		printf("%f \n",tempf);
+		//conversion from phase velocity to angular velocity
+		vel=vel/DUTY_MULT/4*3;
 		//Convert velocity + direction into deadtime, commutation direction, and speed.
 		if(vel<0)
 		{
@@ -238,6 +219,7 @@ void TIM1_UP_TIM10_IRQHandler(void){
 			temp=P3Index;
 			P3Index=P2Index;
 			P2Index=temp;
+			printf("dir=0");
 		}
 		else if(temp<0 && dir<1)
 		{
@@ -246,6 +228,7 @@ void TIM1_UP_TIM10_IRQHandler(void){
 			temp=P3Index;
 			P3Index=P2Index;
 			P2Index=temp;
+			printf("dir=1");
 		}
 		
 		//Normal Operation
@@ -291,41 +274,8 @@ void TIM1_UP_TIM10_IRQHandler(void){
 }
 //IRQ handler for each hall effect signal
 void TIM2_IRQHandler(void){
-	uint8_t temp;
 	if (TIM_GetITStatus(TIM2, TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4) != RESET){
-		
-		//Convert the reading into int
-		temp=4*GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_1);
-		temp+=2*GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_2);
-		temp+=GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_3);
-		
-		//Process based on the commutation sequence
-		if(Hall2En[temp][0])
-		{
-			GPIO_SetBits(GPIOC, GPIO_Pin_0);
-		}
-		else
-		{
-			GPIO_ResetBits(GPIOC, GPIO_Pin_0);
-		}
-		
-		if(Hall2En[temp][1])
-		{
-			GPIO_SetBits(GPIOC, GPIO_Pin_1);
-		}
-		else
-		{
-			GPIO_ResetBits(GPIOC, GPIO_Pin_1);
-		}
-		
-		if(Hall2En[temp][2])
-		{
-			GPIO_SetBits(GPIOC, GPIO_Pin_4);
-		}
-		else
-		{
-			GPIO_ResetBits(GPIOC, GPIO_Pin_4);
-		}
+		Process_Hall();
 		TIM_ClearITPendingBit(TIM2, TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4);
 	}
 	else{
