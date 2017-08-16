@@ -3,11 +3,20 @@
 #include "main.h"
 #include "stm32f4xx.h"
 
+/*
+ * TODO: move user code and defines out of interrupt table, redefine the ones required in a new file
+ */
+
 /* Private define ------------------------------------------------------------*/
 #define DUTY_MULT 3
 
 
-//PWMdata, approximates Sin function from 0 to 180 degrees (0 to 1000) and also provides 0 from 1000 to 2000 to reduce current drain
+/*
+ *PWMdata, approximates Sin function from 0 to 180 degrees (0 to 1000)
+ *also provides 0 from 1000 to 2000 to simply algorithm
+ *data is used to change pulse width for the ON/OFF phase of each stator
+ *slight trade off with ROM, not big problem in this situation
+*/
 const unsigned char PWMdata[2000]={0,1,1,1,2,2,2,3,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,8,9,9,9,10,10,10,11,11,11,12,12,12,13,
 	13,13,13,14,14,14,15,15,15,16,16,16,17,17,17,18,18,18,18,19,19,19,20,20,20,21,21,21,22,22,22,22,23,23,23,24,24,24,25,25,25,
 	25,26,26,26,27,27,27,28,28,28,29,29,29,29,30,30,30,31,31,31,31,32,32,32,33,33,33,34,34,34,34,35,35,35,36,36,36,37,37,37,37,
@@ -59,13 +68,32 @@ extern float Rotation_Data[3];
 extern PID_TypeDef PIDin;
 
 //Values used to to calculate feedback velocity and output velocity
+/*
+ * encoder readings from motor, used to calculate velocity
+ * Encoder0 is current reading, Encoder1 is previous
+ * difference makes velocity
+ */
 float Encoder0=0;
 float Encoder1=0;
-float mvel=0;
-int vel=0;
-int deadtime=0;
-int dir=0;
 
+/*
+ * actual measured velocity calculated from encoder readings
+ */
+float mvel=0;
+/*
+ * "desired" velocity output calculated from PID
+ */
+int vel=0;
+/*
+ * deadtime used to stop any commutation for a brief period during motor rotation direction switch
+ * due to the limited current handling capabilities of a breadboard
+ * this is used to ensure nothing burns
+ */
+int deadtime=0;
+/*
+ * indicates relative direction of motion
+ */
+int dir=0;
 
 /******************************************************************************/
 /*            Cortex-M3 Processor Exceptions Handlers                         */
@@ -187,7 +215,12 @@ void TIM1_UP_TIM10_IRQHandler(void){
 	if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET){
 		int temp=0;
 		float tempf=0;
-		//Prevent the situation where the encoder jumps from 2000 to 0 or 0 to 2000.
+
+		//Convert velocity + direction into deadtime, commutation direction, and speed.
+		/*
+		 * TIM4 is the raw encoder reading
+		 * following converts raw reading to floating measured velocity
+		 */
 		temp=TIM_GetCounter(TIM4);
 		Encoder1=Encoder0;
 		Encoder0=(float)temp*0.00314159265f;
@@ -197,12 +230,19 @@ void TIM1_UP_TIM10_IRQHandler(void){
 			tempf=mvel;
 		}
 		mvel=tempf;
+
+		/*
+		 * this calls the pid output(vel) to be calculated from
+		 * measured velocity(encoder) and desired velocity(MPU6050)
+		 */
 		vel=(int)CalcPID_Out(&PIDin,Rotation_Data[2],tempf);
+
+		//TODO: add debug macro and definitions to remove printfs
 		printf("%f ",Rotation_Data[2]);
 		printf("%f \n",tempf);
-		//conversion from phase velocity to angular velocity
+
+		//conversion from phase velocity to angular speed (direction indicated by temp)
 		vel=vel/DUTY_MULT/4*3;
-		//Convert velocity + direction into deadtime, commutation direction, and speed.
 		if(vel<0)
 		{
 			temp=-1;
@@ -212,6 +252,12 @@ void TIM1_UP_TIM10_IRQHandler(void){
 		{
 			temp=1;
 		}
+
+		/*
+		 * handle situation where a direction switch is required
+		 * this allows the motor to slow down on its own from friction
+		 * without doing commutative braking
+		 */
 		if (temp>0 && dir>0)
 		{
 			dir=0;
@@ -240,6 +286,7 @@ void TIM1_UP_TIM10_IRQHandler(void){
 			P3Index+=vel; 
 
 			//set CCR values
+			//TODO: make this allow for higher velocities and more efficient
 			TIM_SetCompare1(TIM1,vel*DUTY_MULT*PWMdata[P1Index]);
 			TIM_SetCompare2(TIM1,vel*DUTY_MULT*PWMdata[P2Index]);
 			TIM_SetCompare3(TIM1,vel*DUTY_MULT*PWMdata[P3Index]);
@@ -261,6 +308,7 @@ void TIM1_UP_TIM10_IRQHandler(void){
 		else
 		{
 			//Dead time wait, so we dont go over current.
+			//TODO: add a check in case deadtime ever overflows due to memory corruption
 			deadtime--;
 			TIM_SetCompare1(TIM1,0);
 			TIM_SetCompare2(TIM1,0);
